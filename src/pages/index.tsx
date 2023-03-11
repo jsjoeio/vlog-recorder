@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
 import { RecordButton } from "@/components/RecordButton";
+import { VideoRecorder } from "@/components/VideoRecorder";
+import { Header } from "@/components/Header";
 
 export type STATE =
   | "checkingPermissions"
@@ -43,13 +45,9 @@ export default function Home() {
   return (
     <>
       <div className="max-w-screen-lg mx-auto px-3 pt-20 pb-32">
-        <header className="text-center">
-          <h1 className="text-5xl text-gray-900 font-bold whitespace-pre-line leading-hero">
-            {title}
-          </h1>
-          <div className="text-2xl mt-4 mb-16">{description}</div>
-        </header>
+        <Header title={title} description={description} state={state} />
         <div>
+          <VideoRecorder state={state} setState={setState} />
           <RecordButton state={state} setState={setState} />
         </div>
       </div>

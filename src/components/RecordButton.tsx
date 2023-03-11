@@ -1,6 +1,6 @@
 import { STATE } from "@/pages";
 
-type SetStateCallBack = (state: STATE) => void;
+export type SetStateCallBack = (state: STATE) => void;
 type RecordButtonProps = {
   state: STATE;
   setState: SetStateCallBack;
@@ -18,6 +18,7 @@ async function requestMediaPermissions(
     setState("isConnectedWebcam");
     return stream;
   } catch (error) {
+    console.error("There was an error requesting permissions", error);
     setState("isDeniedPermissions");
     return undefined;
   }
@@ -57,7 +58,7 @@ export function RecordButton({ state, setState }: RecordButtonProps) {
               cy="11"
               r="9"
               stroke="currentColor"
-              stroke-width="3"
+              strokeWidth="3"
             ></circle>
             <path
               className="opacity-77"
@@ -82,8 +83,16 @@ export function RecordButton({ state, setState }: RecordButtonProps) {
       // TODO use this icon: https://react-icons.github.io/react-icons/search?q=rec
       // BsFillRecordCircleFill
       return (
-        <button className="btn gap-2 mx-auto normal-case btn-secondary text-center block">
-          Record
+        <button
+          className="btn gap-2 mx-auto normal-case btn-secondary text-center block"
+          onClick={() => {
+            // TODO implement recording
+            // may be worth it to bring the VideoRecorder in here?
+            // not sure
+            console.log("starting recording");
+          }}
+        >
+          Start Recording
         </button>
       );
     }
