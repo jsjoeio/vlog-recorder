@@ -2,7 +2,7 @@ import React, { use, useEffect } from "react";
 import { STATE } from "@/pages";
 import { SetStateCallBack } from "@/components/RecordButton";
 type FixMeLater = any;
-// import FileSaver from "file-saver";
+import FileSaver from "file-saver";
 // Source:
 // https://github.com/huynvk/webrtc_demos/tree/master/record_by_browser
 // https://medium.com/geekculture/record-and-download-video-in-your-browser-using-javascript-b15efe347e57
@@ -69,8 +69,6 @@ export const beginRecord = async (
     stopMediaStream(stream);
   };
 
-  //   mediaRecorder.start();
-
   return mediaRecorder;
 };
 
@@ -83,7 +81,7 @@ export const stopPlaying = (videoElement: HTMLVideoElement | null) => {
 };
 
 export const playRecordedBlobs = (
-  videoElement: HTMLVideoElement,
+  videoElement: HTMLVideoElement | null,
   recordedBlobs: FixMeLater
 ) => {
   const blob = combineBlobs(recordedBlobs);
@@ -91,9 +89,10 @@ export const playRecordedBlobs = (
 
   stopPlaying(videoElement);
 
-  videoElement.controls = true;
-  videoElement.src = url;
-  videoElement.play();
+  if (videoElement) {
+    videoElement.controls = true;
+    videoElement.src = url;
+  }
 };
 
 export const playStream = (
@@ -113,8 +112,7 @@ export const download = (
   fileName = "RecordedVideo.webm"
 ) => {
   const blob = combineBlobs(recordedBlobs);
-  console.log(blob);
-  //   return FileSaver.saveAs(blob, fileName);
+  return FileSaver.saveAs(blob, fileName);
 };
 
 type VideoRecorderProps = {
@@ -131,8 +129,10 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
   );
 
   const recordingVideoEl = React.useRef<HTMLVideoElement | null>(null);
+  const previewVideoEl = React.useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
+    let timerId: number;
     async function showLivePreview() {
       try {
         if (!recorder) {
@@ -142,12 +142,6 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
             (recordedBlobs: FixMeLater) => setData(recordedBlobs)
           );
           setRecorder(mediaRecorder);
-        } else {
-          recorder.stop();
-          stopPlaying(recordingVideoEl.current);
-
-          setRecorder(undefined);
-          setRecorded(true);
         }
       } catch (err) {
         console.error(err);
@@ -157,13 +151,59 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
     if (state === "isConnectedWebcam") {
       showLivePreview();
     }
+
+    if (state === "isRecording" && recorder) {
+      recorder.start();
+    }
+
+    if (state === "isStoppedRecording") {
+      setState("isProcessingVideo");
+    }
+
+    if (state === "isProcessingVideo" && recorder) {
+      recorder?.stop();
+      stopPlaying(recordingVideoEl.current);
+
+      setRecorder(undefined);
+      setRecorded(true);
+
+      setTimeout(() => {
+        setState("isDoneProcessingVideo");
+      }, 1000);
+    }
+    if (state === "isDoneProcessingVideo" && previewVideoEl) {
+      playRecordedBlobs(previewVideoEl.current, data);
+    }
+
+    return () => {
+      clearTimeout(timerId);
+    };
   }, [state]);
 
   switch (state) {
+    case "isRecording":
+    case "isStoppedRecording":
     case "isConnectedWebcam": {
       return (
-        <div className="card w-96 bg-base-100 shadow-xl mb-12 mx-auto">
+        <div className="card h-52 w-96 bg-base-100 shadow-xl mb-12 mx-auto">
           <video ref={recordingVideoEl} playsInline autoPlay muted />
+        </div>
+      );
+    }
+
+    case "isProcessingVideo": {
+      return <div className="text-center">Processing video...</div>;
+    }
+    case "isDoneProcessingVideo": {
+      return (
+        <div className="card h-52 w-96 bg-base-100 shadow-xl mb-12 mx-auto">
+          <video ref={previewVideoEl} playsInline className="mb-12" />
+          <button
+            className="btn gap-2 mx-auto normal-case btn-secondary text-center block"
+            onClick={() => download(data)}
+          >
+            Download
+          </button>
         </div>
       );
     }

@@ -7,8 +7,17 @@ export type STATE =
   | "checkingPermissions"
   | "initial"
   | "requestingPermissions"
+  | "isDeniedPermissions"
   | "isConnectedWebcam"
-  | "isDeniedPermissions";
+  | "isRecording"
+  | "isStoppedRecording"
+  | "isProcessingVideo"
+  | "isDoneProcessingVideo";
+
+/* 
+  TODO - thinking next step is to add a state like 
+  isProcessingVideo so I can show a loading screen
+  */
 
 const title = "Finally, a video recorder";
 const description = "The easiest way to vlog from your browser.";

@@ -79,6 +79,7 @@ export function RecordButton({ state, setState }: RecordButtonProps) {
       );
     }
 
+    case "isStoppedRecording":
     case "isConnectedWebcam": {
       // TODO use this icon: https://react-icons.github.io/react-icons/search?q=rec
       // BsFillRecordCircleFill
@@ -86,19 +87,30 @@ export function RecordButton({ state, setState }: RecordButtonProps) {
         <button
           className="btn gap-2 mx-auto normal-case btn-secondary text-center block"
           onClick={() => {
-            // TODO implement recording
-            // may be worth it to bring the VideoRecorder in here?
-            // not sure
             console.log("starting recording");
+            setState("isRecording");
           }}
         >
           Start Recording
         </button>
       );
     }
-    case "checkingPermissions": {
-      return null;
+    case "isRecording": {
+      // TODO use this icon: https://react-icons.github.io/react-icons/search?q=rec
+      // BsFillRecordCircleFill
+      return (
+        <button
+          className="btn gap-2 mx-auto normal-case btn-secondary text-center block"
+          onClick={() => {
+            setState("isStoppedRecording");
+          }}
+        >
+          Stop Recording
+        </button>
+      );
     }
+    case "isProcessingVideo":
+    case "checkingPermissions":
     default: {
       return null;
     }
