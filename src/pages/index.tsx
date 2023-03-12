@@ -4,6 +4,7 @@ import { VideoRecorder } from "@/components/VideoRecorder";
 import { Header } from "@/components/Header";
 
 export type STATE =
+  | "initialRender"
   | "checkingPermissions"
   | "initial"
   | "requestingPermissions"
@@ -23,7 +24,7 @@ const title = "Finally, a video recorder";
 const description = "The easiest way to vlog from your browser.";
 
 export default function Home() {
-  const [state, setState] = React.useState<STATE>("checkingPermissions");
+  const [state, setState] = React.useState<STATE>("initialRender");
   const [hasAudioPermissions, setHasAudioPermissions] = React.useState(false);
   const [hasVideoPermissions, setHasVideoPermissions] = React.useState(false);
 
@@ -44,12 +45,30 @@ export default function Home() {
 
   // Effect to update initial state after checking video/audio permissions
   useEffect(() => {
+    let timemout: NodeJS.Timeout;
+    setState("checkingPermissions");
     if (hasAudioPermissions && hasVideoPermissions) {
-      setState("isConnectedWebcam");
+      timemout = setTimeout(() => setState("isConnectedWebcam"), 1050);
     } else {
-      setState("initial");
+      timemout = setTimeout(() => setState("initial"), 1050);
     }
+
+    return () => {
+      clearTimeout(timemout);
+    };
   }, [hasAudioPermissions, hasVideoPermissions]);
+
+  if (state === "initialRender" || state === "checkingPermissions") {
+    return (
+      <div className="hero min-h-screen bg-base-200">
+        <div className="hero-content text-center">
+          <div className="max-w-md">
+            <progress className="progress h-10 w-96"></progress>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

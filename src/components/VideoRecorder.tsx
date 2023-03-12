@@ -1,5 +1,6 @@
 import React, { use, useEffect } from "react";
 import { STATE } from "@/pages";
+import { motion, AnimatePresence } from "framer-motion";
 import { SetStateCallBack } from "@/components/RecordButton";
 type FixMeLater = any;
 import FileSaver from "file-saver";
@@ -132,7 +133,7 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
   const previewVideoEl = React.useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    let timerId: number;
+    let timeout: NodeJS.Timeout;
     async function showLivePreview() {
       try {
         if (!recorder) {
@@ -167,7 +168,7 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
       setRecorder(undefined);
       setRecorded(true);
 
-      setTimeout(() => {
+      timeout = setTimeout(() => {
         setState("isDoneProcessingVideo");
       }, 1000);
     }
@@ -176,7 +177,7 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
     }
 
     return () => {
-      clearTimeout(timerId);
+      clearTimeout(timeout);
     };
   }, [state]);
 
@@ -185,13 +186,23 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
     case "isStoppedRecording":
     case "isConnectedWebcam": {
       return (
-        <div className="card h-52 w-96 bg-base-100 shadow-xl mb-12 mx-auto">
-          <video ref={recordingVideoEl} playsInline autoPlay muted />
-        </div>
+        <AnimatePresence>
+          <motion.div
+            key="video-recording"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            exit={{ opacity: 0 }}
+            className="card h-52 w-96 bg-base-100 shadow-xl mb-12 mx-auto"
+          >
+            <video ref={recordingVideoEl} playsInline autoPlay muted />
+          </motion.div>
+        </AnimatePresence>
       );
     }
 
     case "isProcessingVideo": {
+      // TODO make a general loader component and animate this out...
       return <div className="text-center">Processing video...</div>;
     }
     case "isDoneProcessingVideo": {

@@ -1,4 +1,5 @@
 import { STATE } from "@/pages";
+import { AnimatePresence, motion } from "framer-motion";
 
 export type SetStateCallBack = (state: STATE) => void;
 type RecordButtonProps = {
@@ -84,15 +85,21 @@ export function RecordButton({ state, setState }: RecordButtonProps) {
       // TODO use this icon: https://react-icons.github.io/react-icons/search?q=rec
       // BsFillRecordCircleFill
       return (
-        <button
-          className="btn gap-2 mx-auto normal-case btn-secondary text-center block"
-          onClick={() => {
-            console.log("starting recording");
-            setState("isRecording");
-          }}
-        >
-          Start Recording
-        </button>
+        <AnimatePresence>
+          <motion.button
+            key="start-recording"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.75 }}
+            exit={{ opacity: 0 }}
+            className="btn gap-2 mx-auto normal-case btn-secondary text-center block"
+            onClick={() => {
+              setState("isRecording");
+            }}
+          >
+            Start Recording
+          </motion.button>
+        </AnimatePresence>
       );
     }
     case "isRecording": {
