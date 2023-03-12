@@ -213,7 +213,7 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
     }
 
     case "isProcessingVideo": {
-      return <Loader text="Processing video..." />;
+      return <Loader isHero={false} text="Processing video..." />;
     }
     case "isDoneProcessingVideo": {
       return (

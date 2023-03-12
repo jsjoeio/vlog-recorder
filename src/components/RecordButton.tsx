@@ -82,8 +82,8 @@ export function RecordButton({ state, setState }: RecordButtonProps) {
             Permission denied :(
           </button>
           <small className="text-center block">
-            Without webcam and microphone access, we can't record videos for you
-            😢
+            Without webcam and microphone access, we can&apos;t record videos
+            for you 😢
           </small>
           <small className="text-center block">
             We suggest resetting permissions and reloading the app.
