@@ -1,6 +1,8 @@
 import { BsRecordCircle, BsRecordCircleFill } from "react-icons/bs";
 import { STATE } from "@/pages";
+import { DateDisplay } from "./DateDisplay";
 import { AnimatePresence, motion } from "framer-motion";
+import { TimestampCounter } from "./TimestampCounter";
 
 export type SetStateCallBack = (state: STATE) => void;
 type RecordButtonProps = {
@@ -31,7 +33,7 @@ export function RecordButton({ state, setState }: RecordButtonProps) {
     case "initial": {
       return (
         <button
-          className="btn mx-auto normal-case btn-secondary text-center block"
+          className="btn mx-auto normal-case btn-primary text-center block"
           onClick={async () => {
             await requestMediaPermissions(setState);
           }}
@@ -90,10 +92,7 @@ export function RecordButton({ state, setState }: RecordButtonProps) {
       );
     }
 
-    case "isStoppedRecording":
-    case "isConnectedWebcam": {
-      // TODO use this icon: https://react-icons.github.io/react-icons/search?q=rec
-      // BsFillRecordCircleFill
+    case "isStoppedRecording": {
       return (
         <AnimatePresence>
           <motion.button
@@ -102,7 +101,7 @@ export function RecordButton({ state, setState }: RecordButtonProps) {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.75 }}
             exit={{ opacity: 0 }}
-            className="btn gap-2 mx-auto normal-case text-center block flex uppercase btn-outline btn-lg"
+            className="btn gap-2 normal-case mx-auto text-center block flex uppercase btn-outline btn-lg"
             onClick={() => {
               setState("isRecording");
             }}
@@ -113,19 +112,26 @@ export function RecordButton({ state, setState }: RecordButtonProps) {
         </AnimatePresence>
       );
     }
+    case "isConnectedWebcam":
     case "isRecording": {
-      // TODO use this icon: https://react-icons.github.io/react-icons/search?q=rec
-      // BsFillRecordCircleFill
       return (
-        <button
-          className="btn gap-2 mx-auto normal-case btn-secondary text-center block flex btn-error btn-lg"
-          onClick={() => {
-            setState("isStoppedRecording");
-          }}
-        >
-          <BsRecordCircleFill />
-          <span className="uppercase tracking-wider font-bold">rec</span>
-        </button>
+        <div className="flex items-center justify-center mx-auto">
+          <div className="flex items-center justify-center px-6">
+            <TimestampCounter />
+          </div>
+          <button
+            className="btn gap-2 normal-case btn-secondary text-center block flex btn-error btn-lg"
+            onClick={() => {
+              setState("isStoppedRecording");
+            }}
+          >
+            <BsRecordCircleFill />
+            <span className="uppercase tracking-wider font-bold">rec</span>
+          </button>
+          <div className="w-24 flex items-center justify-center">
+            <DateDisplay date={new Date()} />
+          </div>
+        </div>
       );
     }
     case "isProcessingVideo":
