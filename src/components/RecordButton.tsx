@@ -1,3 +1,4 @@
+import { BsRecordCircle, BsRecordCircleFill } from "react-icons/bs";
 import { STATE } from "@/pages";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -92,12 +93,13 @@ export function RecordButton({ state, setState }: RecordButtonProps) {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.75 }}
             exit={{ opacity: 0 }}
-            className="btn gap-2 mx-auto normal-case btn-secondary text-center block"
+            className="btn gap-2 mx-auto normal-case text-center block flex uppercase btn-outline btn-lg"
             onClick={() => {
               setState("isRecording");
             }}
           >
-            Start Recording
+            <BsRecordCircle />{" "}
+            <span className="uppercase tracking-wider font-bold">rec</span>
           </motion.button>
         </AnimatePresence>
       );
@@ -107,12 +109,13 @@ export function RecordButton({ state, setState }: RecordButtonProps) {
       // BsFillRecordCircleFill
       return (
         <button
-          className="btn gap-2 mx-auto normal-case btn-secondary text-center block"
+          className="btn gap-2 mx-auto normal-case btn-secondary text-center block flex btn-error btn-lg"
           onClick={() => {
             setState("isStoppedRecording");
           }}
         >
-          Stop Recording
+          <BsRecordCircleFill />
+          <span className="uppercase tracking-wider font-bold">rec</span>
         </button>
       );
     }

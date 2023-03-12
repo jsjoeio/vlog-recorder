@@ -188,14 +188,24 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
       return (
         <AnimatePresence>
           <motion.div
-            key="video-recording"
+            key="video-recording-isConnectedWebcam"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
             exit={{ opacity: 0 }}
             className="card h-52 w-96 bg-base-100 shadow-xl mb-12 mx-auto"
           >
-            <video ref={recordingVideoEl} playsInline autoPlay muted />
+            <motion.video
+              key="video-element-isConnectedWebcam"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.2 }}
+              exit={{ opacity: 0 }}
+              ref={recordingVideoEl}
+              playsInline
+              autoPlay
+              muted
+            />
           </motion.div>
         </AnimatePresence>
       );
@@ -207,15 +217,36 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
     }
     case "isDoneProcessingVideo": {
       return (
-        <div className="card h-52 w-96 bg-base-100 shadow-xl mb-12 mx-auto">
-          <video ref={previewVideoEl} playsInline className="mb-12" />
-          <button
+        <motion.div
+          key="video-recording-isDoneProcessingVideo"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.75 }}
+          exit={{ opacity: 0 }}
+          className="card h-52 w-96 bg-base-100 shadow-xl mb-12 mx-auto"
+        >
+          <motion.video
+            key="video-element-isDoneProcessingVideo"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            exit={{ opacity: 0 }}
+            ref={previewVideoEl}
+            playsInline
+            className="mb-12"
+          />
+          <motion.button
+            key="button-isDoneProcessingVideo"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            exit={{ opacity: 0 }}
             className="btn gap-2 mx-auto normal-case btn-secondary text-center block"
             onClick={() => download(data)}
           >
             Download
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       );
     }
     case "initial":
