@@ -92,6 +92,7 @@ export function RecordButton({ state, setState }: RecordButtonProps) {
       );
     }
 
+    case "isConnectedWebcam": 
     case "isStoppedRecording": {
       return (
         <AnimatePresence>
@@ -112,7 +113,6 @@ export function RecordButton({ state, setState }: RecordButtonProps) {
         </AnimatePresence>
       );
     }
-    case "isConnectedWebcam":
     case "isRecording": {
       return (
         <div className="flex items-center justify-center mx-auto">
