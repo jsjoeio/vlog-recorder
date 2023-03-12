@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { RecordButton } from "@/components/RecordButton";
 import { VideoRecorder } from "@/components/VideoRecorder";
 import { Header } from "@/components/Header";
+import { Loader } from "@/components/Loader";
 
 export type STATE =
   | "initialRender"
@@ -48,7 +49,7 @@ export default function Home() {
     let timemout: NodeJS.Timeout;
     setState("checkingPermissions");
     if (hasAudioPermissions && hasVideoPermissions) {
-      timemout = setTimeout(() => setState("isConnectedWebcam"), 1050);
+      timemout = setTimeout(() => setState("isConnectedWebcam"), 1250);
     } else {
       timemout = setTimeout(() => setState("initial"), 1050);
     }
@@ -59,15 +60,7 @@ export default function Home() {
   }, [hasAudioPermissions, hasVideoPermissions]);
 
   if (state === "initialRender" || state === "checkingPermissions") {
-    return (
-      <div className="hero min-h-screen bg-base-200">
-        <div className="hero-content text-center">
-          <div className="max-w-md">
-            <progress className="progress h-10 w-96"></progress>
-          </div>
-        </div>
-      </div>
-    );
+    return <Loader isHero />;
   }
 
   return (

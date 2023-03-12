@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { SetStateCallBack } from "@/components/RecordButton";
 type FixMeLater = any;
 import FileSaver from "file-saver";
+import { Loader } from "./Loader";
 // Source:
 // https://github.com/huynvk/webrtc_demos/tree/master/record_by_browser
 // https://medium.com/geekculture/record-and-download-video-in-your-browser-using-javascript-b15efe347e57
@@ -170,7 +171,7 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
 
       timeout = setTimeout(() => {
         setState("isDoneProcessingVideo");
-      }, 1000);
+      }, 2000);
     }
     if (state === "isDoneProcessingVideo" && previewVideoEl) {
       playRecordedBlobs(previewVideoEl.current, data);
@@ -183,8 +184,8 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
 
   switch (state) {
     case "isRecording":
-    case "isStoppedRecording":
-    case "isConnectedWebcam": {
+    case "isConnectedWebcam":
+    case "isStoppedRecording": {
       return (
         <AnimatePresence>
           <motion.div
@@ -212,8 +213,7 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
     }
 
     case "isProcessingVideo": {
-      // TODO make a general loader component and animate this out...
-      return <div className="text-center">Processing video...</div>;
+      return <Loader text="Processing video..." />;
     }
     case "isDoneProcessingVideo": {
       return (
@@ -241,7 +241,7 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
             exit={{ opacity: 0 }}
-            className="btn gap-2 mx-auto normal-case btn-secondary text-center block"
+            className="btn gap-2 mx-auto normal-case btn-accent text-center block"
             onClick={() => download(data)}
           >
             Download
