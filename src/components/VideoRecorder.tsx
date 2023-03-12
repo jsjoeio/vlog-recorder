@@ -29,8 +29,8 @@ const initMediaStream = async () => {
       echoCancellation: { exact: true },
     },
     video: {
-      width: 1280,
-      height: 720,
+      width: 1920,
+      height: 1080,
     },
   };
   const stream = await navigator.mediaDevices.getUserMedia(constraints);
