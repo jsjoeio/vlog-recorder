@@ -75,9 +75,18 @@ export function RecordButton({ state, setState }: RecordButtonProps) {
 
     case "isDeniedPermissions": {
       return (
-        <button className="btn mx-auto normal-case btn-secondary text-center block">
-          Permission denied :(
-        </button>
+        <div>
+          <button className="btn mx-auto normal-case btn-secondary text-center block mb-4">
+            Permission denied :(
+          </button>
+          <small className="text-center block">
+            Without webcam and microphone access, we can't record videos for you
+            😢
+          </small>
+          <small className="text-center block">
+            We suggest resetting permissions and reloading the app.
+          </small>
+        </div>
       );
     }
 
