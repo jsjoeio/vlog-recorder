@@ -111,7 +111,7 @@ export const playStream = (
 
 export const download = (
   recordedBlobs: FixMeLater,
-  fileName = "RecordedVideo.webm"
+  fileName = "recorded-video.webm"
 ) => {
   const blob = combineBlobs(recordedBlobs);
   return FileSaver.saveAs(blob, fileName);
