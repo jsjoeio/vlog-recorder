@@ -98,6 +98,20 @@ const uploadVideo = async (videoData: Blob, token: string) => {
   }
 };
 
+const sendVideo = async (metadataUrl: string, blob: FixMeLater) => {
+  const formData = new FormData();
+  formData.append("blob", blob);
+  formData.append("metadataUrl", metadataUrl);
+  formData.append("blobSize", blob.size.toString());
+
+  const response = await fetch("/api/youtube/send-video", {
+    method: "POST",
+    body: formData,
+  });
+
+  return await response.json();
+};
+
 const uploadToYouTube = async (blob: FixMeLater) => {
   const apiUrl = "/api/youtube/test";
   const videoSize = blob.size;
@@ -337,9 +351,13 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
                 console.log("data", data);
                 const blob = combineBlobs(data);
                 console.log("blob", blob);
-                const joe = await uploadToYouTube(blob);
-                console.log("yo joe", joe);
-                console.log("its workinggggammm");
+                // const { metadataUrl } = await uploadToYouTube(blob);
+
+                // console.log(metadataUrl, "hello");
+                if (1 === 1) {
+                  const sendVideoRes = await sendVideo("https://google.com", blob);
+                  console.log("sendvideores", sendVideoRes);
+                }
               } else {
                 console.log("no session");
               }

@@ -10,7 +10,6 @@ export default async function handler(
 ) {
   // Get the user session from NextAuth
   const token = await getToken({ req, secret });
-  console.log("token", "token", token);
 
   try {
     const url = "https://www.googleapis.com/upload/youtube/v3/videos";
@@ -35,16 +34,26 @@ export default async function handler(
         body: JSON.stringify(metadata),
       }
     );
+    console.log(metadataResponse.status, "metadata");
     // TODO@jsjoeio - stopped here. I think it's location with a lowercase
     const metadataUrl = metadataResponse.headers.get("location");
     // console.log(metadataResponse.headers, "headers");
 
-    // const daata = await metadataResponse.json();
+    const daata = await metadataResponse.json();
 
     if (metadataUrl) {
-      res.status(200).send({ metadataUrl });
+      res.status(200).send({
+        metadataUrl,
+        status: metadataResponse.status,
+        statusText: metadataResponse.statusText,
+      });
     } else {
-      res.status(500).send({ message: "soemting wrong" });
+      res.status(500).send({
+        message: "soemting wrong",
+        status: metadataResponse.status,
+        statusText: metadataResponse.statusText,
+        data: daata,
+      });
     }
   } catch (error) {
     console.error(error);
