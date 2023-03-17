@@ -1,4 +1,5 @@
-import React, { use, useEffect } from "react";
+import React, { useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { STATE } from "@/pages";
 import { motion, AnimatePresence } from "framer-motion";
 import { SetStateCallBack } from "@/components/RecordButton";
@@ -51,15 +52,69 @@ const createBlobURL = (blob: FixMeLater) => {
   return url;
 };
 
-const uploadToYouTube = async (recordedBlobs: FixMeLater) => {
-  const apiUrl = "/api/youtube/start-upload";
-  // const blob = combineBlobs(recordedBlobs);
+const uploadVideo = async (videoData: Blob, token: string) => {
+  try {
+    const url = "https://www.googleapis.com/upload/youtube/v3/videos";
+    const metadata = {
+      snippet: {
+        title: "My Uploaded Video",
+        description: "Description of my uploaded video",
+      },
+    };
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json; charset=UTF-8",
+      "X-Upload-Content-Length": videoData.size.toString(),
+      "X-Upload-Content-Type": videoData.type,
+    };
+    const metadataResponse = await fetch(
+      `${url}?uploadType=resumable&part=snippet,status`,
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify(metadata),
+      }
+    );
+    const metadataUrl = metadataResponse.headers.get("Location");
+
+    if (metadataUrl) {
+      console.log("metadata url");
+      // Use the returned metadata URL to make the resumable upload request
+      const uploadResponse = await fetch(metadataUrl, {
+        method: "PUT",
+        headers: {
+          "Content-Type": videoData.type,
+          "Content-Length": videoData.size.toString(),
+        },
+        body: videoData,
+      });
+
+      console.log(uploadResponse, "upload response");
+
+      console.log("Video uploaded successfully!");
+    }
+  } catch (error) {
+    console.error("something went wrong", error);
+  }
+};
+
+const uploadToYouTube = async (blob: FixMeLater) => {
+  const apiUrl = "/api/youtube/test";
+  const videoSize = blob.size;
+  const videoType = blob.type;
   // const formData = new FormData();
   // formData.append("video", blob, "video.webm");
 
   try {
     const response = await fetch(apiUrl, {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        videoSize,
+        videoType,
+      }),
     });
 
     const data = await response.json();
@@ -146,6 +201,7 @@ type VideoRecorderProps = {
 };
 
 export function VideoRecorder({ state, setState }: VideoRecorderProps) {
+  const { data: session } = useSession();
   const [recorded, setRecorded] = React.useState(false);
   const [playing, setPlaying] = React.useState(false);
   const [data, setData] = React.useState([]);
@@ -276,7 +332,18 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
             transition={{ delay: 1 }}
             exit={{ opacity: 0 }}
             className="btn gap-2 mx-auto normal-case btn-accent text-center block"
-            onClick={async () => uploadToYouTube(data)}
+            onClick={async () => {
+              if (session) {
+                console.log("data", data);
+                const blob = combineBlobs(data);
+                console.log("blob", blob);
+                const joe = await uploadToYouTube(blob);
+                console.log("yo joe", joe);
+                console.log("its workinggggammm");
+              } else {
+                console.log("no session");
+              }
+            }}
           >
             Upload to YouTube
           </motion.button>
