@@ -52,18 +52,14 @@ const createBlobURL = (blob: FixMeLater) => {
 };
 
 const uploadToYouTube = async (recordedBlobs: FixMeLater) => {
-  const apiUrl = "/api/upload";
-  const blob = combineBlobs(recordedBlobs);
-  const formData = new FormData();
-  formData.append("video", blob, "video.webm");
+  const apiUrl = "/api/youtube/start-upload";
+  // const blob = combineBlobs(recordedBlobs);
+  // const formData = new FormData();
+  // formData.append("video", blob, "video.webm");
 
   try {
     const response = await fetch(apiUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "video/webm",
-      },
-      body: formData,
     });
 
     const data = await response.json();
