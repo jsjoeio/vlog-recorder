@@ -51,6 +51,32 @@ const createBlobURL = (blob: FixMeLater) => {
   return url;
 };
 
+const uploadToYouTube = async (recordedBlobs: FixMeLater) => {
+  const apiUrl = "/api/upload";
+  const blob = combineBlobs(recordedBlobs);
+  const blobUrl = createBlobURL(blob);
+
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ video: blobUrl }),
+    });
+
+    const data = await response.json();
+
+    // Use the response data here
+    console.log(data);
+
+    return data;
+  } catch (error) {
+    // Handle the fetch error here
+    console.error(error);
+  }
+};
+
 export const beginRecord = async (
   onStreamReady: FixMeLater,
   onFinished: FixMeLater
@@ -245,6 +271,17 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
             onClick={() => download(data)}
           >
             Download
+          </motion.button>
+          <motion.button
+            key="button-isDoneProcessingVideo-upload"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            exit={{ opacity: 0 }}
+            className="btn gap-2 mx-auto normal-case btn-accent text-center block"
+            onClick={async() => uploadToYouTube(data)}
+          >
+            Upload to YouTube
           </motion.button>
         </motion.div>
       );
