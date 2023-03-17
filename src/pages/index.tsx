@@ -3,6 +3,7 @@ import { RecordButton } from "@/components/RecordButton";
 import { VideoRecorder } from "@/components/VideoRecorder";
 import { Header } from "@/components/Header";
 import { Loader } from "@/components/Loader";
+import { YouTube } from "@/components/YouTube";
 
 export type STATE =
   | "initialRender"
@@ -71,6 +72,7 @@ export default function Home() {
           <VideoRecorder state={state} setState={setState} />
           <RecordButton state={state} setState={setState} />
         </div>
+        <YouTube />
       </div>
     </>
   );
