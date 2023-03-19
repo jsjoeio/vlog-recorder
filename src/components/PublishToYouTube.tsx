@@ -119,30 +119,19 @@ export function PublishToYouTube({ blob }: PublishToYouTubeProps) {
           const data = await uploadToServer(blob);
           if (data.fileName) {
             setPublishingState("successUploadingVideoToServer");
-            setPublishingState("isStartingResumableUpload");
-            const resumableUploadData = await startResumableUpload({
+            setPublishingState("isStartingServerUploadYouTube");
+            const serverYouTubeData = await startServerUploadYouTube({
               videoSize: data.videoSize,
               videoType: data.videoType,
+              fileName: data.fileName,
+              metaDataUrl: "https://google.com"
             });
 
-            if (resumableUploadData.metaDataUrl) {
-              setPublishingState("successStartingResumableUpload");
-              setPublishingState("isStartingServerUploadYouTube");
-              const serverYouTubeData = await startServerUploadYouTube({
-                videoSize: data.videoSize,
-                videoType: data.videoType,
-                fileName: data.fileName,
-                metaDataUrl: resumableUploadData.metaDataUrl,
-              });
-
-              if (serverYouTubeData.status === 200) {
-                setPublishingState("successStartingServerUploadYouTube");
-              }
-
-              console.log("what did the server say?", serverYouTubeData);
-            } else {
-              setPublishingState("errorStartingResumableUpload");
+            if (serverYouTubeData.status === 200) {
+              setPublishingState("successStartingServerUploadYouTube");
             }
+
+            console.log("what did the server say?", serverYouTubeData);
           } else {
             setPublishingState("errorUploadingVideoToServer");
           }
