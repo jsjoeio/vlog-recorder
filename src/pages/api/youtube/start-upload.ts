@@ -1,61 +1,64 @@
-import { google } from "googleapis";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getToken } from "next-auth/jwt";
+import fetch from "node-fetch";
 
 const secret = process.env.SECRET;
-// Set up the YouTube API client
-const youtube = google.youtube({ version: "v3" });
 
-// Set up the YouTube API client
-// const youtube = google.youtube({ version: "v3" });
-
-// Define your /api route handler
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  // Get the user session from NextAuth
+  console.log("call to start-upload");
   const token = await getToken({ req, secret });
 
-  //   Check if the user is authenticated
-  //   if (!session) {
-  //     return res.status(401).json({ error: "Unauthorized" });
-  //   }
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
   try {
-    // Use the user's access token to authenticate with the YouTube API
-    const auth = new google.auth.OAuth2(
-      process.env.YOUTUBE_CLIENT_ID,
-      process.env.YOUTUBE_CLIENT_SECRET,
-      process.env.YOUTUBE_REDIRECT_URL
-    );
-    auth.setCredentials({
-      access_token: String(token?.accessToken),
-    });
-
-    // Define the initial request body
-    const requestBody = {
+    const url = "https://www.googleapis.com/upload/youtube/v3/videos";
+    const videoMetadata = {
       snippet: {
-        title: "My first video",
-        description: "Made in the browser",
-      },
-      status: {
-        privacyStatus: "private",
+        title: "My Uploaded Video",
+        description: "Video uploaded from my vlog recorder",
       },
     };
+    const headers = {
+      Authorization: `Bearer ${String(token?.accessToken)}`,
+      "Content-Type": "application/json; charset=UTF-8",
+      "X-Upload-Content-Length": req.body.videoSize,
+      "X-Upload-Content-Type": req.body.videoType,
+    };
+    const metadataResponse = await fetch(
+      `${url}?uploadType=resumable&part=snippet,status`,
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify(videoMetadata),
+      }
+    );
+    console.log("start-upload response", metadataResponse.headers);
+    const metaDataUrl =
+      metadataResponse.headers.get("location") ||
+      metadataResponse.headers.get("Location");
 
-    // Create the initial request to start the upload
-    const resumableUploadUrl = await youtube.videos.insert({
-      resumable: true,
-    });
+    console.log(metaDataUrl, "what is this");
 
-    // Extract the resumable session URI from the response headers
-    const location = resumableUploadUrl.headers["location"];
-
-    // Return the resumable session URI to the client
-    res.status(200).json({ location });
+    if (metaDataUrl) {
+      res.status(200).send({
+        metaDataUrl,
+        status: metadataResponse.status,
+        statusText: metadataResponse.statusText,
+      });
+    } else {
+      res.status(500).send({
+        message: "soemting wrong",
+        status: metadataResponse.status,
+        statusText: metadataResponse.statusText,
+      });
+    }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to upload video to YouTube." });
+    res.status(500).json({ error: "Failed to start resumable upload." });
   }
 }

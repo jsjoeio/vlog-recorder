@@ -2,11 +2,68 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { clientEnv } from "@/clientEnv";
+import { LoaderButton } from "./LoaderButton";
 
 type PUBLISHING_STATE =
   | "checkingIfLoggedIn"
   | "isLoggedInAndCanPublish"
-  | "isNotLoggedIn";
+  | "isNotLoggedIn"
+  | "isUploadingVideoToServer"
+  | "successUploadingVideoToServer"
+  | "errorUploadingVideoToServer"
+  | "isStartingResumableUpload"
+  | "successStartingResumableUpload"
+  | "errorStartingResumableUpload"
+  | "isStartingServerUploadYouTube"
+  | "successStartingServerUploadYouTube"
+  | "errorStartingServerUploadYouTube";
+
+async function startServerUploadYouTube({
+  videoSize,
+  videoType,
+  fileName,
+  metaDataUrl,
+}: {
+  videoSize: string;
+  videoType: string;
+  fileName: string;
+  metaDataUrl: string;
+}) {
+  const res = await fetch("/api/youtube/start-server-upload", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      videoSize,
+      videoType,
+      metaDataUrl,
+      fileName,
+    }),
+  });
+
+  return await res.json();
+}
+async function startResumableUpload({
+  videoSize,
+  videoType,
+}: {
+  videoSize: string;
+  videoType: string;
+}) {
+  const res = await fetch("/api/youtube/start-upload", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      videoSize,
+      videoType,
+    }),
+  });
+
+  return await res.json();
+}
 
 async function uploadToServer(blob: Blob) {
   if (!clientEnv.success) {
@@ -27,7 +84,6 @@ async function uploadToServer(blob: Blob) {
     });
 
     const data = await response.json();
-    console.log("server resposne", data);
     return data;
   } catch (error) {
     console.error("error uploading video to server", error);
@@ -59,8 +115,37 @@ export function PublishToYouTube({ blob }: PublishToYouTubeProps) {
         exit={{ opacity: 0 }}
         className="btn gap-2 mx-auto normal-case btn-accent text-center block"
         onClick={async () => {
+          setPublishingState("isUploadingVideoToServer");
           const data = await uploadToServer(blob);
-          console.log("data in onclick", data);
+          if (data.fileName) {
+            setPublishingState("successUploadingVideoToServer");
+            setPublishingState("isStartingResumableUpload");
+            const resumableUploadData = await startResumableUpload({
+              videoSize: data.videoSize,
+              videoType: data.videoType,
+            });
+
+            if (resumableUploadData.metaDataUrl) {
+              setPublishingState("successStartingResumableUpload");
+              setPublishingState("isStartingServerUploadYouTube");
+              const serverYouTubeData = await startServerUploadYouTube({
+                videoSize: data.videoSize,
+                videoType: data.videoType,
+                fileName: data.fileName,
+                metaDataUrl: resumableUploadData.metaDataUrl,
+              });
+
+              if (serverYouTubeData.status === 200) {
+                setPublishingState("successStartingServerUploadYouTube");
+              }
+
+              console.log("what did the server say?", serverYouTubeData);
+            } else {
+              setPublishingState("errorStartingResumableUpload");
+            }
+          } else {
+            setPublishingState("errorUploadingVideoToServer");
+          }
         }}
       >
         Upload to YouTube
@@ -68,9 +153,33 @@ export function PublishToYouTube({ blob }: PublishToYouTubeProps) {
     );
   }
 
+  if (publishingState === "isUploadingVideoToServer") {
+    return <LoaderButton text="Uploading to server..." />;
+  }
+
+  if (publishingState === "successUploadingVideoToServer") {
+    return <LoaderButton text="✅ Video uploaded to servers" />;
+  }
+
+  if (publishingState === "isStartingResumableUpload") {
+    return <LoaderButton text="Reaching out to YouTube..." />;
+  }
+
+  if (publishingState === "successStartingResumableUpload") {
+    return <LoaderButton text="✅ YouTube video initialized..." />;
+  }
+
+  if (publishingState === "isStartingServerUploadYouTube") {
+    return <LoaderButton text="Starting upload to YouTube..." />;
+  }
+
+  if (publishingState === "successStartingServerUploadYouTube") {
+    return <LoaderButton text="✅✅ Uploaded to youtube" />;
+  }
+
   if (publishingState === "isNotLoggedIn") {
     return null;
   }
 
-  return null;
+  return <LoaderButton text="Uploading..." />;
 }
