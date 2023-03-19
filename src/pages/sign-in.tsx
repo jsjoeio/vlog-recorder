@@ -1,25 +1,13 @@
 import { signIn, useSession } from "next-auth/react";
 import { useEffect } from "react";
-import { useRouter } from "next/router";
 
 const SignInPage = () => {
   const { data: session, status } = useSession();
-  const router = useRouter();
 
   useEffect(() => {
-    if (!(status === "loading") && !session) {
-      const callbackUrl = `${window.location.origin}/callback`;
-      signIn("google", {
-        callbackUrl,
-      });
-    }
-    if (session) {
-      router.replace({
-        pathname: "/",
-        query: { signedIn: true },
-      });
-    }
-  }, [session, status, router]);
+    if (!(status === "loading") && !session) void signIn("google");
+    if (session) window.close();
+  }, [session, status]);
 
   return (
     <div
