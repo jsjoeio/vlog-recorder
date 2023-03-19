@@ -4,6 +4,8 @@ import { VideoRecorder } from "@/components/VideoRecorder";
 import { Header } from "@/components/Header";
 import { Loader } from "@/components/Loader";
 import { YouTube } from "@/components/YouTube";
+import { LoginModal } from "@/components/LoginModal";
+import { useRouter } from "next/router";
 
 export type STATE =
   | "initialRender"
@@ -26,9 +28,31 @@ const title = "Finally, a video recorder";
 const description = "The easiest way to vlog from your browser.";
 
 export default function Home() {
+  const router = useRouter();
   const [state, setState] = React.useState<STATE>("initialRender");
   const [hasAudioPermissions, setHasAudioPermissions] = React.useState(false);
   const [hasVideoPermissions, setHasVideoPermissions] = React.useState(false);
+
+  // Effect to close window if user signed in from popup
+  // useEffect(() => {
+  //   console.log("checking query param", router.query);
+  //   if (router.query.signedIn) {
+  //     console.log("found it");
+  //     window.opener.close();
+  //   }
+  //   const handleWindowClose = () => {
+  //     if (router.query.signedIn) {
+  //       console.log("found it");
+  //       window.close();
+  //     }
+  //   };
+
+  //   window.addEventListener("beforeunload", handleWindowClose);
+
+  //   return () => {
+  //     window.removeEventListener("beforeunload", handleWindowClose);
+  //   };
+  // }, [router.query.signedIn]);
 
   // Effect to check for video and audio access on initial load
   useEffect(() => {
@@ -72,7 +96,8 @@ export default function Home() {
           <VideoRecorder state={state} setState={setState} />
           <RecordButton state={state} setState={setState} />
         </div>
-        <YouTube />
+        {/* <YouTube /> */}
+        <LoginModal />
       </div>
     </>
   );

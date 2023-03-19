@@ -31,9 +31,10 @@ export default NextAuth({
   ],
   secret: env.SECRET,
   callbacks: {
-    async redirect({ url, baseUrl }) {
-      return baseUrl;
-    },
+    // async redirect({ url, baseUrl }) {
+    //   console.log("what is the url", url);
+    //   return baseUrl;
+    // },
     async jwt({ token, account }) {
       // docs: https://next-auth.js.org/getting-started/example#extensibility
       // Persist the OAuth access_token to the token right after signin
