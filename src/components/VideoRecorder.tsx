@@ -1,11 +1,13 @@
 import React, { useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { clientEnv } from "@/clientEnv";
 import { STATE } from "@/pages";
 import { motion, AnimatePresence } from "framer-motion";
 import { SetStateCallBack } from "@/components/RecordButton";
 type FixMeLater = any;
 import FileSaver from "file-saver";
 import { Loader } from "./Loader";
+import { PublishToYouTube } from "./PublishToYouTube";
 // Source:
 // https://github.com/huynvk/webrtc_demos/tree/master/record_by_browser
 // https://medium.com/geekculture/record-and-download-video-in-your-browser-using-javascript-b15efe347e57
@@ -51,6 +53,14 @@ const createBlobURL = (blob: FixMeLater) => {
   const url = window.URL.createObjectURL(blob);
   return url;
 };
+
+async function pingApi() {
+  if (clientEnv.success) {
+    const apiUrl = `${clientEnv.data.NEXT_PUBLIC_API_URL}/healthz`;
+    const res = await fetch(apiUrl);
+    return res;
+  }
+}
 
 const uploadVideo = async (videoData: Blob, token: string) => {
   try {
@@ -110,37 +120,6 @@ const sendVideo = async (metadataUrl: string, blob: FixMeLater) => {
   });
 
   return await response.json();
-};
-
-const uploadToYouTube = async (blob: FixMeLater) => {
-  const apiUrl = "/api/youtube/test";
-  const videoSize = blob.size;
-  const videoType = blob.type;
-  // const formData = new FormData();
-  // formData.append("video", blob, "video.webm");
-
-  try {
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        videoSize,
-        videoType,
-      }),
-    });
-
-    const data = await response.json();
-
-    // Use the response data here
-    console.log(data);
-
-    return data;
-  } catch (error) {
-    // Handle the fetch error here
-    console.error(error);
-  }
 };
 
 export const beginRecord = async (
@@ -249,6 +228,7 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
 
     if (state === "isRecording" && recorder) {
       recorder.start();
+      pingApi();
     }
 
     if (state === "isStoppedRecording") {
@@ -339,32 +319,7 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
           >
             Download
           </motion.button>
-          <motion.button
-            key="button-isDoneProcessingVideo-upload"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            exit={{ opacity: 0 }}
-            className="btn gap-2 mx-auto normal-case btn-accent text-center block"
-            onClick={async () => {
-              if (session) {
-                console.log("data", data);
-                const blob = combineBlobs(data);
-                console.log("blob", blob);
-                // const { metadataUrl } = await uploadToYouTube(blob);
-
-                // console.log(metadataUrl, "hello");
-                if (1 === 1) {
-                  const sendVideoRes = await sendVideo("https://google.com", blob);
-                  console.log("sendvideores", sendVideoRes);
-                }
-              } else {
-                console.log("no session");
-              }
-            }}
-          >
-            Upload to YouTube
-          </motion.button>
+          <PublishToYouTube blob={combineBlobs(data)} />
         </motion.div>
       );
     }
