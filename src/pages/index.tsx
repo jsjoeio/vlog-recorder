@@ -3,6 +3,8 @@ import { RecordButton } from "@/components/RecordButton";
 import { VideoRecorder } from "@/components/VideoRecorder";
 import { Header } from "@/components/Header";
 import { Loader } from "@/components/Loader";
+import { useRouter } from "next/router";
+import { Navbar } from "@/components/Navbar";
 
 export type STATE =
   | "initialRender"
@@ -25,9 +27,31 @@ const title = "Finally, a video recorder";
 const description = "The easiest way to vlog from your browser.";
 
 export default function Home() {
+  const router = useRouter();
   const [state, setState] = React.useState<STATE>("initialRender");
   const [hasAudioPermissions, setHasAudioPermissions] = React.useState(false);
   const [hasVideoPermissions, setHasVideoPermissions] = React.useState(false);
+
+  // Effect to close window if user signed in from popup
+  // useEffect(() => {
+  //   console.log("checking query param", router.query);
+  //   if (router.query.signedIn) {
+  //     console.log("found it");
+  //     window.opener.close();
+  //   }
+  //   const handleWindowClose = () => {
+  //     if (router.query.signedIn) {
+  //       console.log("found it");
+  //       window.close();
+  //     }
+  //   };
+
+  //   window.addEventListener("beforeunload", handleWindowClose);
+
+  //   return () => {
+  //     window.removeEventListener("beforeunload", handleWindowClose);
+  //   };
+  // }, [router.query.signedIn]);
 
   // Effect to check for video and audio access on initial load
   useEffect(() => {
@@ -65,6 +89,7 @@ export default function Home() {
 
   return (
     <>
+      <Navbar state={state} />
       <div className="max-w-screen-lg mx-auto px-3 pt-20 pb-32">
         <Header title={title} description={description} state={state} />
         <div>
