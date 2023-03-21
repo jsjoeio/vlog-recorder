@@ -1,4 +1,6 @@
 import { useSession, signIn, signOut } from "next-auth/react";
+import { motion } from "framer-motion";
+import { LoaderButton } from "./LoaderButton";
 
 function popUpCenter(url: string, title: string) {
   const dualScreenLeft = window.screenLeft ?? window.screenX;
@@ -31,27 +33,23 @@ function popUpCenter(url: string, title: string) {
 export function LoginModal() {
   const { data: session, status } = useSession();
 
-  if (status === "authenticated") {
+  if (status === "unauthenticated") {
     return (
-      <div>
-        <h2> Welcome {session?.user?.email} 😀</h2>
-        <button onClick={() => signOut()}>Sign out</button>
-      </div>
-    );
-  } else if (status === "unauthenticated") {
-    return (
-      <div>
-        <h2>Please Login</h2>
-        <button onClick={() => popUpCenter("/sign-in", "Sample Sign In")}>
-          Sign In with Google
-        </button>
-      </div>
+      <motion.button
+        key="login-to-youtube"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+        exit={{ opacity: 0 }}
+        className="btn btn-outline btn-accent gap-2 mx-auto normal-case text-center block"
+        onClick={() =>
+          popUpCenter("/sign-in", "Vlog Recorder -Login to YouTube")
+        }
+      >
+        Login to publish to YouTube
+      </motion.button>
     );
   }
 
-  return (
-    <div>
-      <h1>Loading...</h1>
-    </div>
-  );
+  return <LoaderButton text="Loading..." />;
 }

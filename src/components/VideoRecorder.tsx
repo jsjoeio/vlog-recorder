@@ -56,9 +56,11 @@ const createBlobURL = (blob: FixMeLater) => {
 
 async function pingApi() {
   if (clientEnv.success) {
-    const apiUrl = `${clientEnv.data.NEXT_PUBLIC_API_URL}/healthz`;
-    const res = await fetch(apiUrl);
-    return res;
+    if (clientEnv.data.NEXT_PUBLIC_USE_API_URL) {
+      const apiUrl = `${clientEnv.data.NEXT_PUBLIC_API_URL}/healthz`;
+      const res = await fetch(apiUrl);
+      return res;
+    }
   }
 }
 
@@ -308,18 +310,20 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
             playsInline
             className="mb-12"
           />
-          <motion.button
-            key="button-isDoneProcessingVideo"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            exit={{ opacity: 0 }}
-            className="btn gap-2 mx-auto normal-case btn-accent text-center block"
-            onClick={() => download(data)}
-          >
-            Download
-          </motion.button>
-          <PublishToYouTube blob={combineBlobs(data)} />
+          <div className="flex">
+            <motion.button
+              key="button-isDoneProcessingVideo"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1 }}
+              exit={{ opacity: 0 }}
+              className="btn gap-2 mx-auto normal-case btn-accent text-center block"
+              onClick={() => download(data)}
+            >
+              Download
+            </motion.button>
+            <PublishToYouTube blob={combineBlobs(data)} />
+          </div>
         </motion.div>
       );
     }

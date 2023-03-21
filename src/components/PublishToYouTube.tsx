@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import { motion } from "framer-motion";
 import { clientEnv } from "@/clientEnv";
 import { LoaderButton } from "./LoaderButton";
+import { LoginModal } from "./LoginModal";
 
 type PUBLISHING_STATE =
   | "checkingIfLoggedIn"
@@ -115,29 +116,27 @@ export function PublishToYouTube({ blob }: PublishToYouTubeProps) {
         exit={{ opacity: 0 }}
         className="btn gap-2 mx-auto normal-case btn-accent text-center block"
         onClick={async () => {
-          setPublishingState("isUploadingVideoToServer");
-          const data = await uploadToServer(blob);
-          if (data.fileName) {
-            setPublishingState("successUploadingVideoToServer");
-            setPublishingState("isStartingServerUploadYouTube");
-            const serverYouTubeData = await startServerUploadYouTube({
-              videoSize: data.videoSize,
-              videoType: data.videoType,
-              fileName: data.fileName,
-              metaDataUrl: "https://google.com"
-            });
-
-            if (serverYouTubeData.status === 200) {
-              setPublishingState("successStartingServerUploadYouTube");
-            }
-
-            console.log("what did the server say?", serverYouTubeData);
-          } else {
-            setPublishingState("errorUploadingVideoToServer");
-          }
+          // setPublishingState("isUploadingVideoToServer");
+          // const data = await uploadToServer(blob);
+          // if (data.fileName) {
+          //   setPublishingState("successUploadingVideoToServer");
+          //   setPublishingState("isStartingServerUploadYouTube");
+          //   const serverYouTubeData = await startServerUploadYouTube({
+          //     videoSize: data.videoSize,
+          //     videoType: data.videoType,
+          //     fileName: data.fileName,
+          //     metaDataUrl: "https://google.com",
+          //   });
+          //   if (serverYouTubeData.status === 200) {
+          //     setPublishingState("successStartingServerUploadYouTube");
+          //   }
+          //   console.log("what did the server say?", serverYouTubeData);
+          // } else {
+          //   setPublishingState("errorUploadingVideoToServer");
+          // }
         }}
       >
-        Upload to YouTube
+        Upload to YouTube (coming soon)
       </motion.button>
     );
   }
@@ -167,7 +166,7 @@ export function PublishToYouTube({ blob }: PublishToYouTubeProps) {
   }
 
   if (publishingState === "isNotLoggedIn") {
-    return null;
+    return <LoginModal />;
   }
 
   return <LoaderButton text="Uploading..." />;

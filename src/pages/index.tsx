@@ -3,9 +3,8 @@ import { RecordButton } from "@/components/RecordButton";
 import { VideoRecorder } from "@/components/VideoRecorder";
 import { Header } from "@/components/Header";
 import { Loader } from "@/components/Loader";
-import { YouTube } from "@/components/YouTube";
-import { LoginModal } from "@/components/LoginModal";
 import { useRouter } from "next/router";
+import { Navbar } from "@/components/Navbar";
 
 export type STATE =
   | "initialRender"
@@ -90,14 +89,13 @@ export default function Home() {
 
   return (
     <>
+      <Navbar state={state} />
       <div className="max-w-screen-lg mx-auto px-3 pt-20 pb-32">
         <Header title={title} description={description} state={state} />
         <div>
           <VideoRecorder state={state} setState={setState} />
           <RecordButton state={state} setState={setState} />
         </div>
-        {/* <YouTube /> */}
-        <LoginModal />
       </div>
     </>
   );
