@@ -1,13 +1,10 @@
-import React, { useEffect } from "react";
-import { useSession } from "next-auth/react";
-import { clientEnv } from "@/clientEnv";
+import React, { use, useEffect } from "react";
 import { STATE } from "@/pages";
 import { motion, AnimatePresence } from "framer-motion";
 import { SetStateCallBack } from "@/components/RecordButton";
 type FixMeLater = any;
 import FileSaver from "file-saver";
 import { Loader } from "./Loader";
-import { PublishToYouTube } from "./PublishToYouTube";
 // Source:
 // https://github.com/huynvk/webrtc_demos/tree/master/record_by_browser
 // https://medium.com/geekculture/record-and-download-video-in-your-browser-using-javascript-b15efe347e57
@@ -52,76 +49,6 @@ const combineBlobs = (recordedBlobs: FixMeLater) => {
 const createBlobURL = (blob: FixMeLater) => {
   const url = window.URL.createObjectURL(blob);
   return url;
-};
-
-async function pingApi() {
-  if (clientEnv.success) {
-    if (clientEnv.data.NEXT_PUBLIC_USE_API_URL) {
-      const apiUrl = `${clientEnv.data.NEXT_PUBLIC_API_URL}/healthz`;
-      const res = await fetch(apiUrl);
-      return res;
-    }
-  }
-}
-
-const uploadVideo = async (videoData: Blob, token: string) => {
-  try {
-    const url = "https://www.googleapis.com/upload/youtube/v3/videos";
-    const metadata = {
-      snippet: {
-        title: "My Uploaded Video",
-        description: "Description of my uploaded video",
-      },
-    };
-    const headers = {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json; charset=UTF-8",
-      "X-Upload-Content-Length": videoData.size.toString(),
-      "X-Upload-Content-Type": videoData.type,
-    };
-    const metadataResponse = await fetch(
-      `${url}?uploadType=resumable&part=snippet,status`,
-      {
-        method: "POST",
-        headers,
-        body: JSON.stringify(metadata),
-      }
-    );
-    const metadataUrl = metadataResponse.headers.get("Location");
-
-    if (metadataUrl) {
-      console.log("metadata url");
-      // Use the returned metadata URL to make the resumable upload request
-      const uploadResponse = await fetch(metadataUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Type": videoData.type,
-          "Content-Length": videoData.size.toString(),
-        },
-        body: videoData,
-      });
-
-      console.log(uploadResponse, "upload response");
-
-      console.log("Video uploaded successfully!");
-    }
-  } catch (error) {
-    console.error("something went wrong", error);
-  }
-};
-
-const sendVideo = async (metadataUrl: string, blob: FixMeLater) => {
-  const formData = new FormData();
-  formData.append("blob", blob);
-  formData.append("metadataUrl", metadataUrl);
-  formData.append("blobSize", blob.size.toString());
-
-  const response = await fetch("/api/youtube/send-video", {
-    method: "POST",
-    body: formData,
-  });
-
-  return await response.json();
 };
 
 export const beginRecord = async (
@@ -196,7 +123,6 @@ type VideoRecorderProps = {
 };
 
 export function VideoRecorder({ state, setState }: VideoRecorderProps) {
-  const { data: session } = useSession();
   const [recorded, setRecorded] = React.useState(false);
   const [playing, setPlaying] = React.useState(false);
   const [data, setData] = React.useState([]);
@@ -230,7 +156,6 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
 
     if (state === "isRecording" && recorder) {
       recorder.start();
-      pingApi();
     }
 
     if (state === "isStoppedRecording") {
@@ -310,20 +235,17 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
             playsInline
             className="mb-12"
           />
-          <div className="flex">
-            <motion.button
-              key="button-isDoneProcessingVideo"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1 }}
-              exit={{ opacity: 0 }}
-              className="btn gap-2 mx-auto normal-case btn-accent text-center block"
-              onClick={() => download(data)}
-            >
-              Download
-            </motion.button>
-            <PublishToYouTube blob={combineBlobs(data)} />
-          </div>
+          <motion.button
+            key="button-isDoneProcessingVideo"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            exit={{ opacity: 0 }}
+            className="btn gap-2 mx-auto normal-case btn-accent text-center block"
+            onClick={() => download(data)}
+          >
+            Download
+          </motion.button>
         </motion.div>
       );
     }
