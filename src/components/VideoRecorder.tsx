@@ -29,6 +29,32 @@ const detectMimeType = () => {
   return "";
 };
 
+const updateMediaStream = async ({
+  mediaRecorder,
+  microphoneDeviceId,
+  cameraDeviceId,
+}: {
+  mediaRecorder: MediaRecorder;
+  microphoneDeviceId: string;
+  cameraDeviceId: string;
+}) => {
+  const constraints: MediaStreamConstraints = {
+    audio: {
+      deviceId: microphoneDeviceId,
+      echoCancellation: { exact: true },
+    },
+    video: {
+      deviceId: cameraDeviceId,
+      width: 1920,
+      height: 1080,
+    },
+  };
+  // TODO@jsjoeio - you might be able to call
+  // mediaRecorder.stream.getAudioTracks()[0].applyConstraints(constraints.audio)
+  const stream = await navigator.mediaDevices.getUserMedia(constraints);
+  return stream;
+};
+
 const initMediaStream = async () => {
   const constraints: MediaStreamConstraints = {
     audio: {
