@@ -3,6 +3,8 @@ import React, { useState, useEffect } from "react";
 interface Props {
   setMicrophone: (deviceId: string) => void;
   setCamera: (deviceId: string) => void;
+  microphoneDeviceId: string;
+  cameraDeviceId: string;
 }
 
 type SelectListProps = {
@@ -26,16 +28,11 @@ export function DeviceList({
       <select
         className="select select-bordered select-sm"
         onChange={(event) => {
-          console.log(event.target.value);
           handleSelected(event.target.value);
         }}
       >
         {devices.map((device) => (
-          <option
-            key={device.deviceId}
-            value={device.deviceId}
-            selected={device.deviceId === selectedDevice}
-          >
+          <option key={device.deviceId} value={device.deviceId}>
             {device.label}
           </option>
         ))}
@@ -44,9 +41,12 @@ export function DeviceList({
   );
 }
 
-const CameraAndMicLists: React.FC<Props> = ({ setMicrophone, setCamera }) => {
-  const [microphoneDeviceId, setMicrophoneDeviceId] = useState<string>("");
-  const [cameraDeviceId, setCameraDeviceId] = useState<string>("");
+const CameraAndMicLists: React.FC<Props> = ({
+  setMicrophone,
+  setCamera,
+  cameraDeviceId,
+  microphoneDeviceId,
+}) => {
   const [microphones, setMicrophones] = useState<MediaDeviceInfo[]>([]);
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
 
@@ -71,34 +71,19 @@ const CameraAndMicLists: React.FC<Props> = ({ setMicrophone, setCamera }) => {
       });
   }, []);
 
-  const handleCameraChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const deviceId = event.target.value;
-    setCameraDeviceId(deviceId);
-    setMicrophoneDeviceId(deviceId);
-    setCamera(deviceId);
-  };
-
-  const handleMicrophoneChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const deviceId = event.target.value;
-    setMicrophoneDeviceId(deviceId);
-    setMicrophone(deviceId);
-  };
-
   return (
     <div className="flex flex-col justify-center items-center mb-4">
       <DeviceList
         title="Microphone:"
         devices={microphones}
         selectedDevice={microphoneDeviceId}
-        handleSelected={setMicrophoneDeviceId}
+        handleSelected={setMicrophone}
       />
       <DeviceList
         title="Camera:"
         devices={cameras}
         selectedDevice={cameraDeviceId}
-        handleSelected={setCameraDeviceId}
+        handleSelected={setCamera}
       />
     </div>
   );

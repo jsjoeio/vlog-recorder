@@ -29,31 +29,30 @@ const detectMimeType = () => {
   return "";
 };
 
-const updateMediaStream = async ({
-  mediaRecorder,
-  microphoneDeviceId,
-  cameraDeviceId,
-}: {
-  mediaRecorder: MediaRecorder;
-  microphoneDeviceId: string;
-  cameraDeviceId: string;
-}) => {
-  const constraints: MediaStreamConstraints = {
-    audio: {
-      deviceId: microphoneDeviceId,
-      echoCancellation: { exact: true },
-    },
-    video: {
-      deviceId: cameraDeviceId,
-      width: 1920,
-      height: 1080,
-    },
-  };
-  // TODO@jsjoeio - you might be able to call
-  // mediaRecorder.stream.getAudioTracks()[0].applyConstraints(constraints.audio)
-  const stream = await navigator.mediaDevices.getUserMedia(constraints);
-  return stream;
-};
+async function updateCamera(
+  cameraDeviceId: string,
+  mediaRecorder: MediaRecorder
+) {
+  console.log("updating camera");
+  console.log("all video tracks", mediaRecorder.stream.getVideoTracks());
+  const videoTrack = mediaRecorder.stream.getVideoTracks()[0];
+  await videoTrack.applyConstraints({
+    deviceId: cameraDeviceId,
+    width: 1920,
+    height: 1080,
+  });
+}
+
+async function updateMicrophone(
+  microphoneDeviceId: string,
+  mediaRecorder: MediaRecorder
+) {
+  const audioTrack = mediaRecorder.stream.getAudioTracks()[0];
+  await audioTrack.applyConstraints({
+    deviceId: microphoneDeviceId,
+    echoCancellation: { exact: true },
+  });
+}
 
 const initMediaStream = async () => {
   const constraints: MediaStreamConstraints = {
@@ -231,6 +230,8 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
   const [recorder, setRecorder] = React.useState<MediaRecorder | undefined>(
     undefined
   );
+  const [microphoneDeviceId, setMicrophoneDeviceId] = React.useState("");
+  const [cameraDeviceId, setCameraDeviceId] = React.useState("");
 
   const recordingVideoEl = React.useRef<HTMLVideoElement | null>(null);
   const previewVideoEl = React.useRef<HTMLVideoElement | null>(null);
@@ -285,6 +286,26 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
     };
   }, [state]);
 
+  // Effect to update camera or microphone if
+  // user changes either.
+  // Only allowed before they start recording.
+  useEffect(() => {
+    const isConnectedWebcam = state === "isConnectedWebcam";
+    console.log("is our effect running", isConnectedWebcam, "state");
+
+    // TODO@jsjoeio - also this logic is bad because always runs almost
+    if (recorder && isConnectedWebcam && microphoneDeviceId) {
+      console.log("microphone updated", microphoneDeviceId);
+      updateMicrophone(microphoneDeviceId, recorder);
+    }
+
+    // TODO@jsjoeio - also this logic is bad because always runs almost
+    if (recorder && isConnectedWebcam && cameraDeviceId) {
+      console.log("camera updated", cameraDeviceId);
+      updateCamera(cameraDeviceId, recorder);
+    }
+  }, [state, microphoneDeviceId, cameraDeviceId, recorder]);
+
   switch (state) {
     case "isRecording":
     case "isConnectedWebcam":
@@ -313,11 +334,19 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
             />
           </motion.div>
           <Option2
-            setCamera={(deviceId: string) =>
-              console.log("setting camera to: ", deviceId)
-            }
+            cameraDeviceId={cameraDeviceId}
+            microphoneDeviceId={microphoneDeviceId}
+            setCamera={(deviceId: string) => {
+              console.log(
+                "new device id",
+                deviceId,
+                "current ",
+                cameraDeviceId
+              );
+              setCameraDeviceId(deviceId);
+            }}
             setMicrophone={(deviceId: string) =>
-              console.log("setting mic to: ", deviceId)
+              setMicrophoneDeviceId(deviceId)
             }
           />
         </AnimatePresence>
