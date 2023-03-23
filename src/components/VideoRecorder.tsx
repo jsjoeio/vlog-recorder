@@ -8,6 +8,8 @@ type FixMeLater = any;
 import FileSaver from "file-saver";
 import { Loader } from "./Loader";
 import { PublishToYouTube } from "./PublishToYouTube";
+import { CameraMicList } from "./CameraMicList";
+import Option2 from "./Option2";
 // Source:
 // https://github.com/huynvk/webrtc_demos/tree/master/record_by_browser
 // https://medium.com/geekculture/record-and-download-video-in-your-browser-using-javascript-b15efe347e57
@@ -283,6 +285,22 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
               muted
             />
           </motion.div>
+          <CameraMicList
+            setCamera={(deviceId: string) =>
+              console.log("setting camera to: ", deviceId)
+            }
+            setMicrophone={(deviceId: string) =>
+              console.log("setting mic to: ", deviceId)
+            }
+          />
+          <Option2
+            setCamera={(deviceId: string) =>
+              console.log("setting camera to: ", deviceId)
+            }
+            setMicrophone={(deviceId: string) =>
+              console.log("setting mic to: ", deviceId)
+            }
+          />
         </AnimatePresence>
       );
     }
