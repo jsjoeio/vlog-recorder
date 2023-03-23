@@ -271,7 +271,8 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
             exit={{ opacity: 0 }}
-            className="card h-52 w-96 bg-base-100 shadow-xl mb-12 mx-auto"
+            className="card h-[18rem] w-[32rem] bg-base-100 shadow-xl mb-6 mx-auto"
+            // className="card h-52 w-96 bg-base-100 shadow-xl mb-6 mx-auto"
           >
             <motion.video
               key="video-element-isConnectedWebcam"
@@ -285,14 +286,6 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
               muted
             />
           </motion.div>
-          <CameraMicList
-            setCamera={(deviceId: string) =>
-              console.log("setting camera to: ", deviceId)
-            }
-            setMicrophone={(deviceId: string) =>
-              console.log("setting mic to: ", deviceId)
-            }
-          />
           <Option2
             setCamera={(deviceId: string) =>
               console.log("setting camera to: ", deviceId)

@@ -90,7 +90,7 @@ export default function Home() {
   return (
     <>
       <Navbar state={state} />
-      <div className="max-w-screen-lg mx-auto px-3 pt-20 pb-32">
+      <div className="max-w-screen-lg mx-auto px-3 pt-4 pb-32">
         <Header title={title} description={description} state={state} />
         <div>
           <VideoRecorder state={state} setState={setState} />
