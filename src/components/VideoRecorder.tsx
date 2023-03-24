@@ -30,17 +30,42 @@ const detectMimeType = () => {
 };
 
 async function updateCamera(
+  videoElement: HTMLVideoElement | null,
   cameraDeviceId: string,
-  mediaRecorder: MediaRecorder
+  mediaRecorder: MediaRecorder,
+  setData: (data: any) => void,
+  setRecorder: (data: any) => void
 ) {
-  console.log("updating camera");
-  console.log("all video tracks", mediaRecorder.stream.getVideoTracks());
   const videoTrack = mediaRecorder.stream.getVideoTracks()[0];
-  await videoTrack.applyConstraints({
-    deviceId: cameraDeviceId,
-    width: 1920,
-    height: 1080,
-  });
+  videoTrack.stop();
+  const constraints: MediaStreamConstraints = {
+    audio: {
+      echoCancellation: { exact: true },
+    },
+    video: {
+      deviceId: cameraDeviceId,
+      width: 1920,
+      height: 1080,
+    },
+  };
+
+  const stream = await navigator.mediaDevices.getUserMedia(constraints);
+  stopPlaying(videoElement);
+
+  const newMediaRecorder = await beginRecord(
+    () => playStream(videoElement, stream),
+    (recordedBlobs: FixMeLater) => setData(recordedBlobs)
+  );
+  setRecorder(newMediaRecorder);
+
+  // TODO@jsjoeio
+  /*
+
+  Almost working...something to do with the what changes when
+  you hit record. it's not actually recording that stream. it's still
+  using the old one?
+
+  */
 }
 
 async function updateMicrophone(
@@ -54,7 +79,7 @@ async function updateMicrophone(
   });
 }
 
-const initMediaStream = async () => {
+const initMediaStream = async (videoDeviceId?: string) => {
   const constraints: MediaStreamConstraints = {
     audio: {
       echoCancellation: { exact: true },
@@ -64,6 +89,7 @@ const initMediaStream = async () => {
       height: 1080,
     },
   };
+
   const stream = await navigator.mediaDevices.getUserMedia(constraints);
   return stream;
 };
@@ -300,11 +326,17 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
     }
 
     // TODO@jsjoeio - also this logic is bad because always runs almost
-    if (recorder && isConnectedWebcam && cameraDeviceId) {
+    if (isConnectedWebcam && cameraDeviceId && recorder) {
       console.log("camera updated", cameraDeviceId);
-      updateCamera(cameraDeviceId, recorder);
+      updateCamera(
+        recordingVideoEl.current,
+        cameraDeviceId,
+        recorder,
+        setData,
+        setRecorder
+      );
     }
-  }, [state, microphoneDeviceId, cameraDeviceId, recorder]);
+  }, [cameraDeviceId]);
 
   switch (state) {
     case "isRecording":
