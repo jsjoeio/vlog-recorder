@@ -64,14 +64,37 @@ async function updateCamera(
 }
 
 async function updateMicrophone(
+  videoElement: HTMLVideoElement | null,
   microphoneDeviceId: string,
-  mediaRecorder: MediaRecorder
+  mediaRecorder: MediaRecorder,
+  setData: (data: any) => void,
+  setRecorder: (data: any) => void
 ) {
-  const audioTrack = mediaRecorder.stream.getAudioTracks()[0];
-  await audioTrack.applyConstraints({
-    deviceId: microphoneDeviceId,
-    echoCancellation: { exact: true },
-  });
+  const oldAudioTrack = mediaRecorder.stream.getAudioTracks()[0];
+  const oldAudioConstraints = oldAudioTrack.getConstraints();
+  const currentVideoTrack = mediaRecorder.stream.getVideoTracks()[0];
+  const currentVideoConstraints = currentVideoTrack.getConstraints();
+  const newConstraints: MediaStreamConstraints = {
+    audio: {
+      ...oldAudioConstraints,
+      deviceId: microphoneDeviceId,
+    },
+    video: {
+      ...currentVideoConstraints,
+    },
+  };
+  oldAudioTrack.stop();
+  currentVideoTrack.stop();
+
+  const newStream = await navigator.mediaDevices.getUserMedia(newConstraints);
+  stopPlaying(videoElement);
+
+  const newMediaRecorder = await beginRecord(
+    (stream: MediaStream) => playStream(videoElement, stream),
+    (recordedBlobs: FixMeLater) => setData(recordedBlobs),
+    newStream
+  );
+  setRecorder(newMediaRecorder);
 }
 
 const initMediaStream = async () => {
@@ -319,14 +342,6 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
   // Only allowed before they start recording.
   useEffect(() => {
     const isConnectedWebcam = state === "isConnectedWebcam";
-    console.log("is our effect running", isConnectedWebcam, "state");
-
-    // TODO@jsjoeio - also this logic is bad because always runs almost
-    if (recorder && isConnectedWebcam && microphoneDeviceId) {
-      console.log("microphone updated", microphoneDeviceId);
-      updateMicrophone(microphoneDeviceId, recorder);
-    }
-
     // TODO@jsjoeio - also this logic is bad because always runs almost
     if (isConnectedWebcam && cameraDeviceId && recorder) {
       console.log("camera updated", cameraDeviceId);
@@ -339,6 +354,22 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
       );
     }
   }, [cameraDeviceId]);
+
+  useEffect(() => {
+    const isConnectedWebcam = state === "isConnectedWebcam";
+
+    // TODO@jsjoeio - also this logic is bad because always runs almost
+    if (isConnectedWebcam && microphoneDeviceId && recorder) {
+      console.log("microphone updated", microphoneDeviceId);
+      updateMicrophone(
+        recordingVideoEl.current,
+        microphoneDeviceId,
+        recorder,
+        setData,
+        setRecorder
+      );
+    }
+  }, [microphoneDeviceId]);
 
   switch (state) {
     case "isRecording":
@@ -353,7 +384,6 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
             transition={{ delay: 1 }}
             exit={{ opacity: 0 }}
             className="card h-[18rem] w-[32rem] bg-base-100 shadow-xl mb-6 mx-auto"
-            // className="card h-52 w-96 bg-base-100 shadow-xl mb-6 mx-auto"
           >
             <motion.video
               key="video-element-isConnectedWebcam"
@@ -367,22 +397,18 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
               muted
             />
           </motion.div>
-          <Option2
-            cameraDeviceId={cameraDeviceId}
-            microphoneDeviceId={microphoneDeviceId}
-            setCamera={(deviceId: string) => {
-              console.log(
-                "new device id",
-                deviceId,
-                "current ",
-                cameraDeviceId
-              );
-              setCameraDeviceId(deviceId);
-            }}
-            setMicrophone={(deviceId: string) =>
-              setMicrophoneDeviceId(deviceId)
-            }
-          />
+          {state === "isConnectedWebcam" ? (
+            <Option2
+              cameraDeviceId={cameraDeviceId}
+              microphoneDeviceId={microphoneDeviceId}
+              setCamera={(deviceId: string) => {
+                setCameraDeviceId(deviceId);
+              }}
+              setMicrophone={(deviceId: string) =>
+                setMicrophoneDeviceId(deviceId)
+              }
+            />
+          ) : null}
         </AnimatePresence>
       );
     }
