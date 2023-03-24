@@ -36,36 +36,31 @@ async function updateCamera(
   setData: (data: any) => void,
   setRecorder: (data: any) => void
 ) {
-  const videoTrack = mediaRecorder.stream.getVideoTracks()[0];
-  videoTrack.stop();
-  const constraints: MediaStreamConstraints = {
+  const currentAudioTrack = mediaRecorder.stream.getAudioTracks()[0];
+  const currentAudioConstraints = currentAudioTrack.getConstraints();
+  const oldVideoTrack = mediaRecorder.stream.getVideoTracks()[0];
+  const oldVideoConstraints = oldVideoTrack.getConstraints();
+  const newConstraints: MediaStreamConstraints = {
     audio: {
-      echoCancellation: { exact: true },
+      ...currentAudioConstraints,
     },
     video: {
+      ...oldVideoConstraints,
       deviceId: cameraDeviceId,
-      width: 1920,
-      height: 1080,
     },
   };
+  currentAudioTrack.stop();
+  oldVideoTrack.stop();
 
-  const stream = await navigator.mediaDevices.getUserMedia(constraints);
+  const newStream = await navigator.mediaDevices.getUserMedia(newConstraints);
   stopPlaying(videoElement);
 
   const newMediaRecorder = await beginRecord(
-    () => playStream(videoElement, stream),
-    (recordedBlobs: FixMeLater) => setData(recordedBlobs)
+    (stream: MediaStream) => playStream(videoElement, stream),
+    (recordedBlobs: FixMeLater) => setData(recordedBlobs),
+    newStream
   );
   setRecorder(newMediaRecorder);
-
-  // TODO@jsjoeio
-  /*
-
-  Almost working...something to do with the what changes when
-  you hit record. it's not actually recording that stream. it's still
-  using the old one?
-
-  */
 }
 
 async function updateMicrophone(
@@ -79,7 +74,7 @@ async function updateMicrophone(
   });
 }
 
-const initMediaStream = async (videoDeviceId?: string) => {
+const initMediaStream = async () => {
   const constraints: MediaStreamConstraints = {
     audio: {
       echoCancellation: { exact: true },
@@ -179,9 +174,15 @@ const sendVideo = async (metadataUrl: string, blob: FixMeLater) => {
 
 export const beginRecord = async (
   onStreamReady: FixMeLater,
-  onFinished: FixMeLater
+  onFinished: FixMeLater,
+  newStream?: MediaStream
 ) => {
-  const stream = await initMediaStream();
+  let stream: MediaStream;
+  if (newStream) {
+    stream = newStream;
+  } else {
+    stream = await initMediaStream();
+  }
   onStreamReady(stream);
   const options = { mimeType: detectMimeType() };
   const recordedBlobs: FixMeLater = [];
@@ -284,6 +285,7 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
     }
 
     if (state === "isRecording" && recorder) {
+      console.log("tracks", recorder.stream.getVideoTracks());
       recorder.start();
       pingApi();
     }
