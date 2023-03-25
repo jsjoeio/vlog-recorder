@@ -5,6 +5,9 @@ import { clientEnv } from "@/clientEnv";
 import { LoaderButton } from "./LoaderButton";
 import { LoginModal } from "./LoginModal";
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 type PUBLISHING_STATE =
   | "checkingIfLoggedIn"
   | "isLoggedInAndCanPublish"
@@ -12,9 +15,6 @@ type PUBLISHING_STATE =
   | "isUploadingVideoToServer"
   | "successUploadingVideoToServer"
   | "errorUploadingVideoToServer"
-  | "isStartingResumableUpload"
-  | "successStartingResumableUpload"
-  | "errorStartingResumableUpload"
   | "isStartingServerUploadYouTube"
   | "successStartingServerUploadYouTube"
   | "errorStartingServerUploadYouTube";
@@ -95,15 +95,23 @@ type PublishToYouTubeProps = {
   blob: Blob;
 };
 
+// See: https://react.dev/learn/you-might-not-need-an-effect#initializing-the-application
+let didInit = false;
+
 export function PublishToYouTube({ blob }: PublishToYouTubeProps) {
   const [publishingState, setPublishingState] =
     useState<PUBLISHING_STATE>("checkingIfLoggedIn");
   const { status } = useSession();
 
+  console.log(publishingState, "publishing state");
+
   useEffect(() => {
-    if (status === "authenticated") {
-      setPublishingState("isLoggedInAndCanPublish");
-    } else setPublishingState("isNotLoggedIn");
+    if (!didInit) {
+      didInit = true;
+      if (status === "authenticated") {
+        setPublishingState("isLoggedInAndCanPublish");
+      } else setPublishingState("isNotLoggedIn");
+    }
   });
 
   if (publishingState === "isLoggedInAndCanPublish") {
@@ -117,6 +125,11 @@ export function PublishToYouTube({ blob }: PublishToYouTubeProps) {
         className="btn gap-2 mx-auto normal-case btn-accent text-center block"
         onClick={async () => {
           // setPublishingState("isUploadingVideoToServer");
+          // await sleep(2000);
+          // setPublishingState("successUploadingVideoToServer");
+          // setPublishingState("isStartingServerUploadYouTube");
+          // await sleep(2000);
+          // setPublishingState("successStartingServerUploadYouTube");
           // const data = await uploadToServer(blob);
           // if (data.fileName) {
           //   setPublishingState("successUploadingVideoToServer");
@@ -149,20 +162,24 @@ export function PublishToYouTube({ blob }: PublishToYouTubeProps) {
     return <LoaderButton text="✅ Video uploaded to servers" />;
   }
 
-  if (publishingState === "isStartingResumableUpload") {
-    return <LoaderButton text="Reaching out to YouTube..." />;
-  }
-
-  if (publishingState === "successStartingResumableUpload") {
-    return <LoaderButton text="✅ YouTube video initialized..." />;
-  }
-
   if (publishingState === "isStartingServerUploadYouTube") {
-    return <LoaderButton text="Starting upload to YouTube..." />;
+    return <LoaderButton text="Uploading to YouTube..." />;
   }
 
   if (publishingState === "successStartingServerUploadYouTube") {
-    return <LoaderButton text="✅✅ Uploaded to youtube" />;
+    return (
+      <div className="gap-2 mx-auto normal-case text-center block">
+        <p>Successful upload! 🎉</p>
+        <a
+          href="https://youtube.com"
+          target="_blank"
+          className="link link-success link-hover"
+        >
+          Link to YouTube video
+        </a>
+      </div>
+    );
+    return <LoaderButton text="✅ Video uploaded to YouTube" />;
   }
 
   if (publishingState === "isNotLoggedIn") {
