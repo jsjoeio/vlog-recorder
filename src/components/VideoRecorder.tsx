@@ -126,10 +126,14 @@ const createBlobURL = (blob: FixMeLater) => {
 
 async function pingApi() {
   if (clientEnv.success) {
-    if (clientEnv.data.NEXT_PUBLIC_USE_API_URL) {
+    if (clientEnv.data.NEXT_PUBLIC_USE_API_URL === "true") {
       const apiUrl = `${clientEnv.data.NEXT_PUBLIC_API_URL}/healthz`;
-      const res = await fetch(apiUrl);
-      return res;
+      try {
+        const res = await fetch(apiUrl);
+        return res;
+      } catch (error) {
+        console.error("error pinging api", error);
+      }
     }
   }
 }
@@ -304,6 +308,7 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
 
     if (state === "isConnectedWebcam") {
       showLivePreview();
+      pingApi();
     }
 
     if (state === "isRecording" && recorder) {

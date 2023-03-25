@@ -8,7 +8,6 @@ type NavbarProps = {
 
 export function Navbar({ state }: NavbarProps) {
   const { data: session, status } = useSession();
-  console.log(status, "status");
   const userEmail = session?.user?.email;
 
   if (state === "isDoneProcessingVideo" && status === "authenticated") {

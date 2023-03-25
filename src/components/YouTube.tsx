@@ -2,9 +2,6 @@ import { useSession, signIn, signOut } from "next-auth/react";
 
 export function YouTube() {
   const { data: session, status } = useSession();
-  if (!session?.accessToken) {
-    console.log("not logged in");
-  }
   const userEmail = session?.user?.email;
 
   if (status === "loading") {
