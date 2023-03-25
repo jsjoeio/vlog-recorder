@@ -1,7 +1,6 @@
 import { STATE } from "@/pages";
 import { useSession, signOut } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { popUpCenter } from "./LoginModal";
 
 type NavbarProps = {
   state: STATE;
