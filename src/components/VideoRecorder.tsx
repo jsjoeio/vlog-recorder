@@ -8,8 +8,7 @@ type FixMeLater = any;
 import FileSaver from "file-saver";
 import { Loader } from "./Loader";
 import { PublishToYouTube } from "./PublishToYouTube";
-import { CameraMicList } from "./CameraMicList";
-import Option2 from "./Option2";
+import { CameraAndMicLists } from "./CameraAndMicLists";
 // Source:
 // https://github.com/huynvk/webrtc_demos/tree/master/record_by_browser
 // https://medium.com/geekculture/record-and-download-video-in-your-browser-using-javascript-b15efe347e57
@@ -398,7 +397,7 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
             />
           </motion.div>
           {state === "isConnectedWebcam" ? (
-            <Option2
+            <CameraAndMicLists
               cameraDeviceId={cameraDeviceId}
               microphoneDeviceId={microphoneDeviceId}
               setCamera={(deviceId: string) => {
