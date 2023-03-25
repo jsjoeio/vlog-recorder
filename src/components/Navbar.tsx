@@ -22,7 +22,10 @@ export function Navbar({ state }: NavbarProps) {
         >
           <ul>
             <li className="text-sm">{userEmail}</li>
-            <li className="text-sm" onClick={async () => await signOut()}>
+            <li
+              className="text-sm"
+              onClick={async () => await signOut({ redirect: false })}
+            >
               <button>Log out</button>
             </li>
           </ul>

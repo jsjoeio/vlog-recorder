@@ -32,8 +32,7 @@ export default NextAuth({
   secret: env.SECRET,
   callbacks: {
     // async redirect({ url, baseUrl }) {
-    //   console.log("what is the url", url);
-    //   return baseUrl;
+      // return baseUrl;
     // },
     async jwt({ token, account }) {
       // docs: https://next-auth.js.org/getting-started/example#extensibility

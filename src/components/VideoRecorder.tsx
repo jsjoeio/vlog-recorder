@@ -8,6 +8,7 @@ type FixMeLater = any;
 import FileSaver from "file-saver";
 import { Loader } from "./Loader";
 import { PublishToYouTube } from "./PublishToYouTube";
+import { CameraAndMicLists } from "./CameraAndMicLists";
 // Source:
 // https://github.com/huynvk/webrtc_demos/tree/master/record_by_browser
 // https://medium.com/geekculture/record-and-download-video-in-your-browser-using-javascript-b15efe347e57
@@ -27,6 +28,74 @@ const detectMimeType = () => {
   return "";
 };
 
+async function updateCamera(
+  videoElement: HTMLVideoElement | null,
+  cameraDeviceId: string,
+  mediaRecorder: MediaRecorder,
+  setData: (data: any) => void,
+  setRecorder: (data: any) => void
+) {
+  const currentAudioTrack = mediaRecorder.stream.getAudioTracks()[0];
+  const currentAudioConstraints = currentAudioTrack.getConstraints();
+  const oldVideoTrack = mediaRecorder.stream.getVideoTracks()[0];
+  const oldVideoConstraints = oldVideoTrack.getConstraints();
+  const newConstraints: MediaStreamConstraints = {
+    audio: {
+      ...currentAudioConstraints,
+    },
+    video: {
+      ...oldVideoConstraints,
+      deviceId: cameraDeviceId,
+    },
+  };
+  currentAudioTrack.stop();
+  oldVideoTrack.stop();
+
+  const newStream = await navigator.mediaDevices.getUserMedia(newConstraints);
+  stopPlaying(videoElement);
+
+  const newMediaRecorder = await beginRecord(
+    (stream: MediaStream) => playStream(videoElement, stream),
+    (recordedBlobs: FixMeLater) => setData(recordedBlobs),
+    newStream
+  );
+  setRecorder(newMediaRecorder);
+}
+
+async function updateMicrophone(
+  videoElement: HTMLVideoElement | null,
+  microphoneDeviceId: string,
+  mediaRecorder: MediaRecorder,
+  setData: (data: any) => void,
+  setRecorder: (data: any) => void
+) {
+  const oldAudioTrack = mediaRecorder.stream.getAudioTracks()[0];
+  const oldAudioConstraints = oldAudioTrack.getConstraints();
+  const currentVideoTrack = mediaRecorder.stream.getVideoTracks()[0];
+  const currentVideoConstraints = currentVideoTrack.getConstraints();
+  const newConstraints: MediaStreamConstraints = {
+    audio: {
+      ...oldAudioConstraints,
+      deviceId: microphoneDeviceId,
+    },
+    video: {
+      ...currentVideoConstraints,
+    },
+  };
+  oldAudioTrack.stop();
+  currentVideoTrack.stop();
+
+  const newStream = await navigator.mediaDevices.getUserMedia(newConstraints);
+  stopPlaying(videoElement);
+
+  const newMediaRecorder = await beginRecord(
+    (stream: MediaStream) => playStream(videoElement, stream),
+    (recordedBlobs: FixMeLater) => setData(recordedBlobs),
+    newStream
+  );
+  setRecorder(newMediaRecorder);
+}
+
 const initMediaStream = async () => {
   const constraints: MediaStreamConstraints = {
     audio: {
@@ -37,6 +106,7 @@ const initMediaStream = async () => {
       height: 1080,
     },
   };
+
   const stream = await navigator.mediaDevices.getUserMedia(constraints);
   return stream;
 };
@@ -56,10 +126,14 @@ const createBlobURL = (blob: FixMeLater) => {
 
 async function pingApi() {
   if (clientEnv.success) {
-    if (clientEnv.data.NEXT_PUBLIC_USE_API_URL) {
+    if (clientEnv.data.NEXT_PUBLIC_USE_API_URL === "true") {
       const apiUrl = `${clientEnv.data.NEXT_PUBLIC_API_URL}/healthz`;
-      const res = await fetch(apiUrl);
-      return res;
+      try {
+        const res = await fetch(apiUrl);
+        return res;
+      } catch (error) {
+        console.error("error pinging api", error);
+      }
     }
   }
 }
@@ -126,9 +200,15 @@ const sendVideo = async (metadataUrl: string, blob: FixMeLater) => {
 
 export const beginRecord = async (
   onStreamReady: FixMeLater,
-  onFinished: FixMeLater
+  onFinished: FixMeLater,
+  newStream?: MediaStream
 ) => {
-  const stream = await initMediaStream();
+  let stream: MediaStream;
+  if (newStream) {
+    stream = newStream;
+  } else {
+    stream = await initMediaStream();
+  }
   onStreamReady(stream);
   const options = { mimeType: detectMimeType() };
   const recordedBlobs: FixMeLater = [];
@@ -203,6 +283,8 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
   const [recorder, setRecorder] = React.useState<MediaRecorder | undefined>(
     undefined
   );
+  const [microphoneDeviceId, setMicrophoneDeviceId] = React.useState("");
+  const [cameraDeviceId, setCameraDeviceId] = React.useState("");
 
   const recordingVideoEl = React.useRef<HTMLVideoElement | null>(null);
   const previewVideoEl = React.useRef<HTMLVideoElement | null>(null);
@@ -226,9 +308,11 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
 
     if (state === "isConnectedWebcam") {
       showLivePreview();
+      pingApi();
     }
 
     if (state === "isRecording" && recorder) {
+      console.log("tracks", recorder.stream.getVideoTracks());
       recorder.start();
       pingApi();
     }
@@ -257,6 +341,40 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
     };
   }, [state]);
 
+  // Effect to update camera or microphone if
+  // user changes either.
+  // Only allowed before they start recording.
+  useEffect(() => {
+    const isConnectedWebcam = state === "isConnectedWebcam";
+    // TODO@jsjoeio - also this logic is bad because always runs almost
+    if (isConnectedWebcam && cameraDeviceId && recorder) {
+      console.log("camera updated", cameraDeviceId);
+      updateCamera(
+        recordingVideoEl.current,
+        cameraDeviceId,
+        recorder,
+        setData,
+        setRecorder
+      );
+    }
+  }, [cameraDeviceId]);
+
+  useEffect(() => {
+    const isConnectedWebcam = state === "isConnectedWebcam";
+
+    // TODO@jsjoeio - also this logic is bad because always runs almost
+    if (isConnectedWebcam && microphoneDeviceId && recorder) {
+      console.log("microphone updated", microphoneDeviceId);
+      updateMicrophone(
+        recordingVideoEl.current,
+        microphoneDeviceId,
+        recorder,
+        setData,
+        setRecorder
+      );
+    }
+  }, [microphoneDeviceId]);
+
   switch (state) {
     case "isRecording":
     case "isConnectedWebcam":
@@ -269,7 +387,7 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
             animate={{ opacity: 1 }}
             transition={{ delay: 1 }}
             exit={{ opacity: 0 }}
-            className="card h-52 w-96 bg-base-100 shadow-xl mb-12 mx-auto"
+            className="card h-[18rem] w-[32rem] bg-base-100 shadow-xl mb-6 mx-auto"
           >
             <motion.video
               key="video-element-isConnectedWebcam"
@@ -283,6 +401,18 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
               muted
             />
           </motion.div>
+          {state === "isConnectedWebcam" ? (
+            <CameraAndMicLists
+              cameraDeviceId={cameraDeviceId}
+              microphoneDeviceId={microphoneDeviceId}
+              setCamera={(deviceId: string) => {
+                setCameraDeviceId(deviceId);
+              }}
+              setMicrophone={(deviceId: string) =>
+                setMicrophoneDeviceId(deviceId)
+              }
+            />
+          ) : null}
         </AnimatePresence>
       );
     }
