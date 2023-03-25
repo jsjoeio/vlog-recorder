@@ -1,6 +1,7 @@
 import { STATE } from "@/pages";
 import { useSession, signOut } from "next-auth/react";
 import { AnimatePresence, motion } from "framer-motion";
+import { popUpCenter } from "./LoginModal";
 
 type NavbarProps = {
   state: STATE;
@@ -8,6 +9,7 @@ type NavbarProps = {
 
 export function Navbar({ state }: NavbarProps) {
   const { data: session, status } = useSession();
+  console.log(status, "status");
   const userEmail = session?.user?.email;
 
   if (state === "isDoneProcessingVideo" && status === "authenticated") {
@@ -22,7 +24,10 @@ export function Navbar({ state }: NavbarProps) {
         >
           <ul>
             <li className="text-sm">{userEmail}</li>
-            <li className="text-sm" onClick={async () => await signOut()}>
+            <li
+              className="text-sm"
+              onClick={async () => await signOut({ redirect: false })}
+            >
               <button>Log out</button>
             </li>
           </ul>
