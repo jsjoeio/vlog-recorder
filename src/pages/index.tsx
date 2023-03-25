@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { Loader } from "@/components/Loader";
 import { useRouter } from "next/router";
 import { Navbar } from "@/components/Navbar";
+import { SpeakerNotes } from "@/components/SpeakerNotes";
 
 export type STATE =
   | "initialRender"
@@ -90,11 +91,12 @@ export default function Home() {
   return (
     <>
       <Navbar state={state} />
-      <div className="max-w-screen-lg mx-auto px-3 pt-4 pb-32">
+      <div className="max-w-screen-lg mx-auto px-3 pb-32">
         <Header title={title} description={description} state={state} />
         <div>
           <VideoRecorder state={state} setState={setState} />
           <RecordButton state={state} setState={setState} />
+          <SpeakerNotes state={state} />
         </div>
       </div>
     </>
