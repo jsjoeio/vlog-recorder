@@ -2,6 +2,7 @@ import { clientEnv } from "@/clientEnv";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getToken } from "next-auth/jwt";
 import fetch from "node-fetch";
+import { env } from "process";
 
 const secret = process.env.SECRET;
 
@@ -31,6 +32,9 @@ export default async function handler(
     const headers = {
       Authorization: `Bearer ${String(token?.accessToken)}`,
       "Content-Type": "application/json",
+      Origin:
+        env.NEXTAUTH_URL ||
+        "https://3000--dev--egghead--jsjoeio--apps.dev.coder.com/",
     };
     const serverResponse = await fetch(url, {
       method: "POST",
@@ -38,13 +42,14 @@ export default async function handler(
       body: JSON.stringify(videoData),
     });
 
+    const uploadResponse = await serverResponse.json() as {url: string}
+
     console.log("serverResponse", serverResponse);
 
-    // TODO@jsjoeio - look at this code
-    // if (serverResponse.ok) {
     res.status(200).send({
       status: 200,
       message: "server uploading to youtube",
+      url: uploadResponse?.url
     });
     // } else {
     //   res.status(500).send({

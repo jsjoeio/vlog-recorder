@@ -3,7 +3,6 @@ import { RecordButton } from "@/components/RecordButton";
 import { VideoRecorder } from "@/components/VideoRecorder";
 import { Header } from "@/components/Header";
 import { Loader } from "@/components/Loader";
-import { useRouter } from "next/router";
 import { Navbar } from "@/components/Navbar";
 import { SpeakerNotes } from "@/components/SpeakerNotes";
 
@@ -28,10 +27,11 @@ const title = "Finally, a video recorder";
 const description = "The easiest way to vlog from your browser.";
 
 export default function Home() {
-  const router = useRouter();
   const [state, setState] = React.useState<STATE>("initialRender");
   const [hasAudioPermissions, setHasAudioPermissions] = React.useState(false);
   const [hasVideoPermissions, setHasVideoPermissions] = React.useState(false);
+  const [microphoneDeviceId, setMicrophoneDeviceId] = React.useState("");
+  const [cameraDeviceId, setCameraDeviceId] = React.useState("");
 
   // Effect to close window if user signed in from popup
   // useEffect(() => {
@@ -94,8 +94,24 @@ export default function Home() {
       <div className="max-w-screen-lg mx-auto px-3 pb-32">
         <Header title={title} description={description} state={state} />
         <div>
-          <VideoRecorder state={state} setState={setState} />
-          <RecordButton state={state} setState={setState} />
+          <VideoRecorder
+            cameraDeviceId={cameraDeviceId}
+            microphoneDeviceId={microphoneDeviceId}
+            state={state}
+            setState={setState}
+          />
+          <RecordButton
+            state={state}
+            setState={setState}
+            cameraDeviceId={cameraDeviceId}
+            microphoneDeviceId={microphoneDeviceId}
+            setCamera={(deviceId: string) => {
+              setCameraDeviceId(deviceId);
+            }}
+            setMicrophone={(deviceId: string) =>
+              setMicrophoneDeviceId(deviceId)
+            }
+          />
           <SpeakerNotes state={state} />
         </div>
       </div>
