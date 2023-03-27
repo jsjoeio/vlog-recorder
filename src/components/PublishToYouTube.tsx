@@ -105,6 +105,12 @@ export function PublishToYouTube({ blob }: PublishToYouTubeProps) {
 
   console.log(publishingState, "publishing state");
 
+  function checkLoginStatus() {
+    if (status === "authenticated") {
+      setPublishingState("isLoggedInAndCanPublish");
+    } else setPublishingState("isNotLoggedIn");
+  }
+
   useEffect(() => {
     if (!didInit) {
       didInit = true;
@@ -127,26 +133,26 @@ export function PublishToYouTube({ blob }: PublishToYouTubeProps) {
           // setPublishingState("isUploadingVideoToServer");
           // await sleep(2000);
           // setPublishingState("successUploadingVideoToServer");
-          // setPublishingState("isStartingServerUploadYouTube");
+          setPublishingState("isUploadingVideoToServer");
           // await sleep(2000);
           // setPublishingState("successStartingServerUploadYouTube");
-          // const data = await uploadToServer(blob);
-          // if (data.fileName) {
-          //   setPublishingState("successUploadingVideoToServer");
-          //   setPublishingState("isStartingServerUploadYouTube");
-          //   const serverYouTubeData = await startServerUploadYouTube({
-          //     videoSize: data.videoSize,
-          //     videoType: data.videoType,
-          //     fileName: data.fileName,
-          //     metaDataUrl: "https://google.com",
-          //   });
-          //   if (serverYouTubeData.status === 200) {
-          //     setPublishingState("successStartingServerUploadYouTube");
-          //   }
-          //   console.log("what did the server say?", serverYouTubeData);
-          // } else {
-          //   setPublishingState("errorUploadingVideoToServer");
-          // }
+          const data = await uploadToServer(blob);
+          console.log("waht is the data", data);
+          if (data && data.fileName) {
+            setPublishingState("successUploadingVideoToServer");
+            setPublishingState("isStartingServerUploadYouTube");
+            const serverYouTubeData = await startServerUploadYouTube({
+              videoSize: data.videoSize,
+              videoType: data.videoType,
+              fileName: data.fileName,
+              metaDataUrl: "https://google.com",
+            });
+            if (serverYouTubeData.status === 200) {
+              setPublishingState("successStartingServerUploadYouTube");
+            }
+          } else {
+            setPublishingState("errorUploadingVideoToServer");
+          }
         }}
       >
         Upload to YouTube (coming soon)
@@ -179,12 +185,31 @@ export function PublishToYouTube({ blob }: PublishToYouTubeProps) {
         </a>
       </div>
     );
-    return <LoaderButton text="✅ Video uploaded to YouTube" />;
+  }
+
+  if (publishingState === "errorUploadingVideoToServer") {
+    return (
+      <div className="gap-2 mx-auto normal-case text-center block">
+        <p>Something went wrong 😢</p>
+      </div>
+    );
   }
 
   if (publishingState === "isNotLoggedIn") {
     return <LoginModal />;
   }
 
-  return <LoaderButton text="Uploading..." />;
+  return (
+    <motion.button
+      key="publish-to-youtube"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 1 }}
+      exit={{ opacity: 0 }}
+      className="btn gap-2 mx-auto normal-case btn-accent text-center block"
+      onClick={() => checkLoginStatus()}
+    >
+      Refresh login status
+    </motion.button>
+  );
 }
