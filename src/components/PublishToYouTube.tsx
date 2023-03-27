@@ -104,8 +104,6 @@ export function PublishToYouTube({ blob }: PublishToYouTubeProps) {
   const [videoUrl, setVideoUrl] = useState("");
   const { status } = useSession();
 
-  console.log(publishingState, "publishing state");
-
   function checkLoginStatus() {
     if (status === "authenticated") {
       setPublishingState("isLoggedInAndCanPublish");
@@ -138,7 +136,7 @@ export function PublishToYouTube({ blob }: PublishToYouTubeProps) {
           // await sleep(2000);
           // setPublishingState("successStartingServerUploadYouTube");
           const data = await uploadToServer(blob);
-          console.log("waht is the data", data);
+          console.log("what is the data", data);
           if (data && data.fileName) {
             setPublishingState("successUploadingVideoToServer");
             setPublishingState("isStartingServerUploadYouTube");

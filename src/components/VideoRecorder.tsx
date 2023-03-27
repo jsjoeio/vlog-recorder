@@ -315,7 +315,6 @@ export function VideoRecorder({
     }
 
     if (state === "isRecording" && recorder) {
-      console.log("tracks", recorder.stream.getVideoTracks());
       recorder.start();
       pingApi();
     }
@@ -367,7 +366,6 @@ export function VideoRecorder({
 
     // TODO@jsjoeio - also this logic is bad because always runs almost
     if (isConnectedWebcam && microphoneDeviceId && recorder) {
-      console.log("microphone updated", microphoneDeviceId);
       updateMicrophone(
         recordingVideoEl.current,
         microphoneDeviceId,
