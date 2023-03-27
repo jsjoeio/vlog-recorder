@@ -4,11 +4,16 @@ import { DateDisplay } from "./DateDisplay";
 import { AnimatePresence, motion } from "framer-motion";
 import { TimestampCounter } from "./TimestampCounter";
 import { LoaderButton } from "./LoaderButton";
+import { CameraAndMicLists } from "./CameraAndMicLists";
 
 export type SetStateCallBack = (state: STATE) => void;
 type RecordButtonProps = {
   state: STATE;
   setState: SetStateCallBack;
+  cameraDeviceId: string;
+  microphoneDeviceId: string;
+  setCamera: (deviceId: string) => void;
+  setMicrophone: (deviceId: string) => void;
 };
 async function requestMediaPermissions(
   setState: SetStateCallBack
@@ -29,7 +34,14 @@ async function requestMediaPermissions(
   }
 }
 
-export function RecordButton({ state, setState }: RecordButtonProps) {
+export function RecordButton({
+  state,
+  setState,
+  setCamera,
+  cameraDeviceId,
+  microphoneDeviceId,
+  setMicrophone,
+}: RecordButtonProps) {
   switch (state) {
     case "initial": {
       return (
@@ -69,20 +81,28 @@ export function RecordButton({ state, setState }: RecordButtonProps) {
     case "isStoppedRecording": {
       return (
         <AnimatePresence>
-          <motion.button
-            key="start-recording"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.75 }}
-            exit={{ opacity: 0 }}
-            className="btn gap-2 normal-case mx-auto text-center block flex uppercase btn-outline btn-lg"
-            onClick={() => {
-              setState("isRecording");
-            }}
-          >
-            <BsRecordCircle />{" "}
-            <span className="uppercase tracking-wider font-bold">rec</span>
-          </motion.button>
+          <div className="flex items-center justify-center mx-auto">
+            <motion.button
+              key="start-recording"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.75 }}
+              exit={{ opacity: 0 }}
+              className="btn gap-2 normal-case text-center block flex uppercase btn-outline btn-lg min-w-fit mr-2"
+              onClick={() => {
+                setState("isRecording");
+              }}
+            >
+              <BsRecordCircle />{" "}
+              <span className="uppercase tracking-wider font-bold">rec</span>
+            </motion.button>
+            <CameraAndMicLists
+              cameraDeviceId={cameraDeviceId}
+              microphoneDeviceId={microphoneDeviceId}
+              setCamera={setCamera}
+              setMicrophone={setMicrophone}
+            />
+          </div>
         </AnimatePresence>
       );
     }

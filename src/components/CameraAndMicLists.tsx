@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { FiSettings } from "react-icons/fi";
 
 interface Props {
   setMicrophone: (deviceId: string) => void;
@@ -72,19 +73,30 @@ export const CameraAndMicLists: React.FC<Props> = ({
   }, []);
 
   return (
-    <div className="flex flex-col justify-center items-center mb-4">
-      <DeviceList
-        title="Microphone:"
-        devices={microphones}
-        selectedDevice={microphoneDeviceId}
-        handleSelected={setMicrophone}
-      />
-      <DeviceList
-        title="Camera:"
-        devices={cameras}
-        selectedDevice={cameraDeviceId}
-        handleSelected={setCamera}
-      />
+    <div>
+      <label htmlFor="my-modal-4" className="btn btn-outline">
+        <FiSettings />
+      </label>
+
+      <input type="checkbox" id="my-modal-4" className="modal-toggle" />
+      <label htmlFor="my-modal-4" className="modal cursor-pointer">
+        <label className="modal-box relative" htmlFor="">
+          <div className="flex flex-col justify-center items-center mb-4">
+            <DeviceList
+              title="Microphone:"
+              devices={microphones}
+              selectedDevice={microphoneDeviceId}
+              handleSelected={setMicrophone}
+            />
+            <DeviceList
+              title="Camera:"
+              devices={cameras}
+              selectedDevice={cameraDeviceId}
+              handleSelected={setCamera}
+            />
+          </div>
+        </label>
+      </label>
     </div>
   );
 };

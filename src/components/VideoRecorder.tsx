@@ -8,7 +8,6 @@ type FixMeLater = any;
 import FileSaver from "file-saver";
 import { Loader } from "./Loader";
 import { PublishToYouTube } from "./PublishToYouTube";
-import { CameraAndMicLists } from "./CameraAndMicLists";
 // Source:
 // https://github.com/huynvk/webrtc_demos/tree/master/record_by_browser
 // https://medium.com/geekculture/record-and-download-video-in-your-browser-using-javascript-b15efe347e57
@@ -273,9 +272,16 @@ export const download = (
 type VideoRecorderProps = {
   state: STATE;
   setState: SetStateCallBack;
+  cameraDeviceId: string;
+  microphoneDeviceId: string;
 };
 
-export function VideoRecorder({ state, setState }: VideoRecorderProps) {
+export function VideoRecorder({
+  state,
+  setState,
+  cameraDeviceId,
+  microphoneDeviceId,
+}: VideoRecorderProps) {
   const { data: session } = useSession();
   const [recorded, setRecorded] = React.useState(false);
   const [playing, setPlaying] = React.useState(false);
@@ -283,9 +289,6 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
   const [recorder, setRecorder] = React.useState<MediaRecorder | undefined>(
     undefined
   );
-  const [microphoneDeviceId, setMicrophoneDeviceId] = React.useState("");
-  const [cameraDeviceId, setCameraDeviceId] = React.useState("");
-
   const recordingVideoEl = React.useRef<HTMLVideoElement | null>(null);
   const previewVideoEl = React.useRef<HTMLVideoElement | null>(null);
 
@@ -401,18 +404,6 @@ export function VideoRecorder({ state, setState }: VideoRecorderProps) {
               muted
             />
           </motion.div>
-          {state === "isConnectedWebcam" ? (
-            <CameraAndMicLists
-              cameraDeviceId={cameraDeviceId}
-              microphoneDeviceId={microphoneDeviceId}
-              setCamera={(deviceId: string) => {
-                setCameraDeviceId(deviceId);
-              }}
-              setMicrophone={(deviceId: string) =>
-                setMicrophoneDeviceId(deviceId)
-              }
-            />
-          ) : null}
         </AnimatePresence>
       );
     }

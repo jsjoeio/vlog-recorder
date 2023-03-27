@@ -101,6 +101,7 @@ let didInit = false;
 export function PublishToYouTube({ blob }: PublishToYouTubeProps) {
   const [publishingState, setPublishingState] =
     useState<PUBLISHING_STATE>("checkingIfLoggedIn");
+  const [videoUrl, setVideoUrl] = useState("");
   const { status } = useSession();
 
   console.log(publishingState, "publishing state");
@@ -149,6 +150,9 @@ export function PublishToYouTube({ blob }: PublishToYouTubeProps) {
             });
             if (serverYouTubeData.status === 200) {
               setPublishingState("successStartingServerUploadYouTube");
+              if (serverYouTubeData.url) {
+                setVideoUrl(serverYouTubeData.url);
+              }
             }
           } else {
             setPublishingState("errorUploadingVideoToServer");
@@ -176,13 +180,15 @@ export function PublishToYouTube({ blob }: PublishToYouTubeProps) {
     return (
       <div className="gap-2 mx-auto normal-case text-center block">
         <p>Successful upload! 🎉</p>
-        <a
-          href="https://youtube.com"
-          target="_blank"
-          className="link link-success link-hover"
-        >
-          Link to YouTube video
-        </a>
+        {videoUrl ? (
+          <a
+            href={videoUrl}
+            target="_blank"
+            className="link link-success link-hover"
+          >
+            Link to YouTube video
+          </a>
+        ) : null}
       </div>
     );
   }

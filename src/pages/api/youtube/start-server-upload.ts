@@ -42,13 +42,14 @@ export default async function handler(
       body: JSON.stringify(videoData),
     });
 
+    const uploadResponse = await serverResponse.json() as {url: string}
+
     console.log("serverResponse", serverResponse);
 
-    // TODO@jsjoeio - look at this code
-    // if (serverResponse.ok) {
     res.status(200).send({
       status: 200,
       message: "server uploading to youtube",
+      url: uploadResponse?.url
     });
     // } else {
     //   res.status(500).send({
