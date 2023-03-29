@@ -2,7 +2,7 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import { motion } from "framer-motion";
 import { LoaderButton } from "./LoaderButton";
 
-function popUpCenter(url: string, title: string) {
+export function popUpCenter(url: string, title: string) {
   const dualScreenLeft = window.screenLeft ?? window.screenX;
   const dualScreenTop = window.screenTop ?? window.screenY;
 
@@ -51,5 +51,5 @@ export function LoginModal() {
     );
   }
 
-  return <LoaderButton text="Loading..." />;
+  return null;
 }
